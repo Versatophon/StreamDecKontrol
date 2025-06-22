@@ -12,7 +12,7 @@
 
 #include "externals/imgui/imgui.h"
 
-#include <chrono>
+#include "StreamDeckSurface.h"
 
 
 StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
@@ -26,6 +26,16 @@ StreamDeckWindow::~StreamDeckWindow()
 {
     tjDestroy(mCompressorInstance);
     tjDestroy(mDecompressorInstance);
+}
+
+tjhandle StreamDeckWindow::GetCompressor()
+{
+    return mCompressorInstance;
+}
+
+tjhandle StreamDeckWindow::GetDecompressor()
+{
+    return mDecompressorInstance;
 }
 
 int32_t StreamDeckWindow::Init()
@@ -170,61 +180,14 @@ void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId,
 {
     pDevice->SetImageFromPath(pButtonId, pImagePath);
 
-    std::ifstream lFile(pImagePath, std::ios::binary | std::ios::ate);
-    size_t lFileSize = lFile.tellg();
-    lFile.seekg(0, std::ios_base::beg);
-
-    try 
-    {
-        std::chrono::system_clock::time_point lBeginTime = std::chrono::high_resolution_clock::now();
-
-        Image* lImage = new Image
-        {
-            pImagePath,
-            std::vector<uint8_t>(lFileSize)
-        };
-
-        lFile.read((char*)lImage->JpegData.data(), lFileSize);
-
-        int32_t lWidth = -1;
-        int32_t lHeight = -1;
-
-        if ( 0 != tjDecompressHeader(mDecompressorInstance, lImage->JpegData.data(), lImage->JpegData.size(), &lWidth, &lHeight) )
-        {
-            std::cout << "jpeg header extraction failed" << std::endl;
-        }
-        else
-        {
-            lImage->Surface = SDL_CreateSurface(lWidth, lHeight, SDL_PIXELFORMAT_RGBA32);
-            //lImage.Content.resize(lImage.Width * lImage.Height * 4);
-
-            if( 0 != tjDecompress2(mDecompressorInstance, lImage->JpegData.data(), lImage->JpegData.size(), (uint8_t*)lImage->Surface->pixels, 
-                                   lImage->Surface->w, lImage->Surface->pitch, lImage->Surface->h, TJPF_RGBA, TJFLAG_ACCURATEDCT))
-            {
-                std::cout << "jpeg decompression failed" << std::endl;
-            }
-        }
-
-        lImage->Texture = SDL_CreateTextureFromSurface(GetRenderer(), lImage->Surface);
-
-        mButtonImages[pButtonId] = lImage;
-
-        std::chrono::system_clock::time_point lEndTime = std::chrono::high_resolution_clock::now();
-        int64_t lDurationSinceLastLoop = std::chrono::duration_cast<std::chrono::microseconds>(lEndTime -lBeginTime).count();
-
-        std::cout << lImage->Filepath << "(" << lImage->Surface->w << "x" << lImage->Surface->h << ") in " << float(lDurationSinceLastLoop)/1000.f << " ms." << std::endl;
-    }
-    catch (const std::exception& lException)
-    {
-        std::cout << lException.what() << " on " << pImagePath << std::endl;
-    }
+    mButtonImages[pButtonId] = new StreamDeckSurface(pImagePath, this, this);
 }
 
 #define BORDER_WIDTH 1
 #define IMG_SIZE 72
 #define CROSS_MARGIN 10
 
-bool StreamDeckWindow::DisplayButton(bool pPressed, Image* pImage)
+bool StreamDeckWindow::DisplayButton(bool pPressed, StreamDeckSurface* pImage)
 {
     uint32_t lMargin = 20;
     ImDrawList* lDrawList = ImGui::GetWindowDrawList();
@@ -256,7 +219,7 @@ bool StreamDeckWindow::DisplayButton(bool pPressed, Image* pImage)
 
     if( pImage != nullptr)
     {
-        ImTextureRef lTextureRef((ImTextureID)(intptr_t)pImage->Texture);
+        ImTextureRef lTextureRef((ImTextureID)(intptr_t)pImage->GetTexture());
 
         lDrawList->AddImageRounded(lTextureRef, lButtonBeginPos, lButtonEndPos, {0,0}, {1,1}, ImColor(ImVec4{1.f, 1.f, 1.f, 1.f}), 10);
     }

@@ -80,6 +80,16 @@ ManagedWindow::~ManagedWindow()
     delete mID;
 }
 
+SDL_Renderer* ManagedWindow::GetSdlRenderer()
+{
+    return mID->SdlRenderer;
+}
+
+SDL_Window* ManagedWindow::GetSdlWindow()
+{
+    return mID->SdlWindow;
+}
+
 int32_t ManagedWindow::Execute()
 {
     char* lArgV [1] = {(char*)this->mID};
@@ -103,11 +113,6 @@ int32_t ManagedWindow::Iterate()
 
 void ManagedWindow::Quit()
 {
-}
-
-SDL_Renderer* ManagedWindow::GetRenderer()
-{
-    return mID->SdlRenderer;
 }
 
 int32_t ManagedWindow::InternalInit()
