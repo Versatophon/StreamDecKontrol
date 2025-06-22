@@ -19,6 +19,7 @@ StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
 mCompressorInstance(tjInitCompress()),
 mDecompressorInstance(tjInitDecompress())
 {
+    mButtonImages.resize(15, nullptr);
 }
  
 StreamDeckWindow::~StreamDeckWindow()
@@ -137,10 +138,13 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
             {
                 bool lButtonPressed = pDevice->GetButtonPressed(lButtonIndex);
 
-                while(DisplayButton(lButtonPressed) && !mDroppedFileQueue.empty())
-                {//if mouse is above this button and we have a file drop queue
-                    std::string lFilePath = mDroppedFileQueue.front();mDroppedFileQueue.pop();
-                    SetImage(pDevice, lButtonIndex, lFilePath.c_str());
+                if( DisplayButton(lButtonPressed, mButtonImages[lButtonIndex]) )
+                {
+                    while( !mDroppedFileQueue.empty())
+                    {//if mouse is above this button and we have a file drop queue
+                        std::string lFilePath = mDroppedFileQueue.front();mDroppedFileQueue.pop();
+                        SetImage(pDevice, lButtonIndex, lFilePath.c_str());
+                    }
                 }
 
                 ++lButtonIndex;
@@ -174,36 +178,41 @@ void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId,
     {
         std::chrono::system_clock::time_point lBeginTime = std::chrono::high_resolution_clock::now();
 
-        Image lImage
+        Image* lImage = new Image
         {
             pImagePath,
-            -1,
-            -1,
             std::vector<uint8_t>(lFileSize)
         };
 
+        lFile.read((char*)lImage->JpegData.data(), lFileSize);
 
-        lFile.read((char*)lImage.FileData.data(), lFileSize);
+        int32_t lWidth = -1;
+        int32_t lHeight = -1;
 
-        if ( 0 != tjDecompressHeader(mDecompressorInstance, lImage.FileData.data(), lImage.FileData.size(), &lImage.Width, &lImage.Height) )
+        if ( 0 != tjDecompressHeader(mDecompressorInstance, lImage->JpegData.data(), lImage->JpegData.size(), &lWidth, &lHeight) )
         {
             std::cout << "jpeg header extraction failed" << std::endl;
         }
         else
         {
-            lImage.Content.resize(lImage.Width * lImage.Height * 4);
+            lImage->Surface = SDL_CreateSurface(lWidth, lHeight, SDL_PIXELFORMAT_RGBA32);
+            //lImage.Content.resize(lImage.Width * lImage.Height * 4);
 
-            if( 0 != tjDecompress2(mDecompressorInstance, lImage.FileData.data(), lImage.FileData.size(), lImage.Content.data(), 
-                                   lImage.Width, lImage.Width*4, lImage.Height, TJPF_RGBA, TJFLAG_ACCURATEDCT))
+            if( 0 != tjDecompress2(mDecompressorInstance, lImage->JpegData.data(), lImage->JpegData.size(), (uint8_t*)lImage->Surface->pixels, 
+                                   lImage->Surface->w, lImage->Surface->pitch, lImage->Surface->h, TJPF_RGBA, TJFLAG_ACCURATEDCT))
             {
                 std::cout << "jpeg decompression failed" << std::endl;
             }
         }
 
+        lImage->Texture = SDL_CreateTextureFromSurface(GetRenderer(), lImage->Surface);
+
+        mButtonImages[pButtonId] = lImage;
+
         std::chrono::system_clock::time_point lEndTime = std::chrono::high_resolution_clock::now();
         int64_t lDurationSinceLastLoop = std::chrono::duration_cast<std::chrono::microseconds>(lEndTime -lBeginTime).count();
 
-        std::cout << lImage.Filepath << "(" << lImage.Width << "x" << lImage.Height << ") in " << float(lDurationSinceLastLoop)/1000.f << " ms." << std::endl;
+        std::cout << lImage->Filepath << "(" << lImage->Surface->w << "x" << lImage->Surface->h << ") in " << float(lDurationSinceLastLoop)/1000.f << " ms." << std::endl;
     }
     catch (const std::exception& lException)
     {
@@ -211,15 +220,28 @@ void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId,
     }
 }
 
-bool StreamDeckWindow::DisplayButton(bool pPressed)
+#define BORDER_WIDTH 1
+#define IMG_SIZE 72
+#define CROSS_MARGIN 10
+
+bool StreamDeckWindow::DisplayButton(bool pPressed, Image* pImage)
 {
     uint32_t lMargin = 20;
     ImDrawList* lDrawList = ImGui::GetWindowDrawList();
 
-    ImVec2 lButtonBeginPos = ImGui::GetCursorPos();
+    ImVec2 lItemBeginPos = ImGui::GetCursorPos();
+
+    ImVec2 lButtonBeginPos = lItemBeginPos;
+    lButtonBeginPos.x += BORDER_WIDTH;
+    lButtonBeginPos.y += BORDER_WIDTH;
+
     ImVec2 lButtonEndPos = lButtonBeginPos;
-    lButtonEndPos.x += 74;
-    lButtonEndPos.y += 74;
+    lButtonEndPos.x += IMG_SIZE;
+    lButtonEndPos.y += IMG_SIZE;
+
+    ImVec2 lItemEndPos = lButtonEndPos;
+    lItemEndPos.x += BORDER_WIDTH;
+    lItemEndPos.y += BORDER_WIDTH;
 
     bool lMayDropSomething = mIsDroppingSomething;
     bool lMouseIsAbove = true;
@@ -232,15 +254,24 @@ bool StreamDeckWindow::DisplayButton(bool pPressed)
 
     lMayDropSomething &= lMouseIsAbove;
 
-    lDrawList->AddRect(lButtonBeginPos, lButtonEndPos, ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 10, 0, pPressed?2.f:1.f);
+    if( pImage != nullptr)
+    {
+        ImTextureRef lTextureRef((ImTextureID)(intptr_t)pImage->Texture);
+
+        lDrawList->AddImageRounded(lTextureRef, lButtonBeginPos, lButtonEndPos, {0,0}, {1,1}, ImColor(ImVec4{1.f, 1.f, 1.f, 1.f}), 10);
+    }
+    
+    lDrawList->AddRect(lItemBeginPos, lItemEndPos, ImColor(pPressed?ImVec4{0.21f, 0.75f, 0.21f, 1.f}:ImVec4{0.75f, 0.75f, 0.75f, 1.f}),
+                       10, 0, pPressed?2.f:1.f);
+
 
     if (lMayDropSomething)
     {
-        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + 37, lButtonBeginPos.y + 10), ImVec2(lButtonBeginPos.x + 37, lButtonBeginPos.y + 64), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
-        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + 10, lButtonBeginPos.y + 37), ImVec2(lButtonBeginPos.x + 64, lButtonBeginPos.y + 37), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
+        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + IMG_SIZE/2, lButtonBeginPos.y + CROSS_MARGIN), ImVec2(lButtonBeginPos.x + IMG_SIZE/2, lButtonBeginPos.y + IMG_SIZE - CROSS_MARGIN), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
+        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + CROSS_MARGIN, lButtonBeginPos.y + IMG_SIZE/2), ImVec2(lButtonBeginPos.x + IMG_SIZE - CROSS_MARGIN, lButtonBeginPos.y + IMG_SIZE/2), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
     }
 
-    ImGui::Dummy(ImVec2(74 + lMargin, 74 + lMargin + 5));
+    ImGui::Dummy(ImVec2(IMG_SIZE+BORDER_WIDTH*2 + lMargin, IMG_SIZE+BORDER_WIDTH*2 + lMargin + 5));
 
     return lMouseIsAbove;
 }
@@ -294,5 +325,4 @@ void StreamDeckWindow::EnumerateDevices()
         delete mDevicesMap[lSerial];
         mDevicesMap.erase(lSerial);
     }
-
 }

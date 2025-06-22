@@ -105,6 +105,11 @@ void ManagedWindow::Quit()
 {
 }
 
+SDL_Renderer* ManagedWindow::GetRenderer()
+{
+    return mID->SdlRenderer;
+}
+
 int32_t ManagedWindow::InternalInit()
 {
     SDL_SetAppMetadata("My Linux Stream Deck", "0.0.1", "com.versatophon.streamdeck");

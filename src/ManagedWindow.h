@@ -5,6 +5,7 @@
 union SDL_Event;
 
 struct ManagedWindowID;
+struct SDL_Renderer;
 
 class ManagedWindow
 {
@@ -19,6 +20,8 @@ protected:
     virtual int32_t Event(SDL_Event *pEvent);
     virtual int32_t Iterate();
     virtual void Quit();
+
+    SDL_Renderer* GetRenderer();
     
     int32_t mArgC = 0;
     char** mArgV = nullptr;

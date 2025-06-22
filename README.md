@@ -12,6 +12,11 @@ Install SDL3
 sudo apt install SDL3-dev
 ```
 
+Install TurboJpeg
+```bash
+sudo apt install libturbojpeg-dev
+```
+
 ## Build
 
 Open a terminal in `prj` directory, then call:

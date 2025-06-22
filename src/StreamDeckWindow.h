@@ -11,15 +11,16 @@
 #include "StreamDeckRawDevice.h"
 
 typedef void *tjhandle;
+struct SDL_Surface;
+struct SDL_Texture;
 
 #if 1
 struct Image
 {
     std::string Filepath;
-    int32_t Width;
-    int32_t Height;
-    std::vector<uint8_t> FileData;
-    std::vector<uint8_t> Content;
+    std::vector<uint8_t> JpegData;
+    SDL_Surface* Surface;
+    SDL_Texture* Texture;
 };
 #endif
 
@@ -49,7 +50,7 @@ private:
      * \param[in] pPressed Set it to true if hardware button is pressed
      * \return True if mouse cursor is above 
      */
-    bool DisplayButton(bool pPressed);
+    bool DisplayButton(bool pPressed, Image* pImage);
 
     void EnumerateDevices();
 
@@ -62,4 +63,7 @@ private:
     //TurboJpeg stuff
     tjhandle mCompressorInstance;
     tjhandle mDecompressorInstance;
+
+
+    std::vector<Image*> mButtonImages;
 };
