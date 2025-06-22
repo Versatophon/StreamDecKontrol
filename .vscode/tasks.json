@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "command": "bash",
+	"args": [
+        "-c"
+    ],
+    "tasks": [
+        {
+            "label": "build",
+            "type": "cppbuild",
+            "command": "make",
+            "options": {
+                "isShellCommand": true,
+                "showOutput": "always",
+                "cwd": "${workspaceRoot}/prj"
+            },
+            "args": ["StreamDecKontrol"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "clean",
+            "type": "cppbuild",
+            "command": "make",
+            "options": {
+                "isShellCommand": true,
+                "showOutput": "always",
+                "cwd": "${workspaceRoot}/prj"
+            },
+            "args": ["clean"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
