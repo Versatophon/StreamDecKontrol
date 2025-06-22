@@ -157,7 +157,7 @@ void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
     }
 }
 
-void StreamDeckRawDevice::SetBlankImage(uint8_t pButtonIndex)
+void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath)
 {
     if( mDevice != nullptr )
     {
@@ -167,7 +167,8 @@ void StreamDeckRawDevice::SetBlankImage(uint8_t pButtonIndex)
 
         memset(lReport.data(), 0, lReportSize);
 
-        std::ifstream lFile("/home/versatophon/Images/gimp.jpg", std::ios::binary | std::ios::ate);
+        //"/home/versatophon/Images/gimp.jpg"
+        std::ifstream lFile(pFilepath, std::ios::binary | std::ios::ate);
         size_t lFileSize = lFile.tellg();
         lFile.seekg(0, std::ios_base::beg);
 
@@ -273,17 +274,5 @@ void StreamDeckRawDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
     {
         //SetBlankImage(pIndex);
         SetScreenSaverTime(0);
-    }
-
-    if (pIndex == 7 && !pPressed)
-    {
-        SetBlankImage(pIndex);
-        //SetBrightness(100);
-    }
-
-    if (pIndex == 8 && !pPressed)
-    {
-        SetBlankImage(pIndex);
-        //SetBrightness(100);
     }
 }

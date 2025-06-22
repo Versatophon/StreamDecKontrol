@@ -27,7 +27,7 @@ public:
 
     void SetScreenSaverTime(uint32_t pTiming);
 
-    void SetBlankImage(uint8_t pButtonIndex);
+    void SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath);
 
     const char* GetSerial() const;
 

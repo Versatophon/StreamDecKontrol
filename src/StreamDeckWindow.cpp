@@ -222,6 +222,10 @@ void StreamDeckWindow::EnumerateDevices()
         {//new connection
             //TODO: find an efficient way to store Vendor and Device Ids
             mDevicesMap[lSerial] = new StreamDeckRawDevice(0x0fd9, 0x006d, lSerial.c_str());
+            
+            //need to update here in order to have connection to send the image
+            mDevicesMap[lSerial]->Update();
+            mDevicesMap[lSerial]->SetImageFromPath(0, "../resources/gimp.jpg");
         }
     }
 
