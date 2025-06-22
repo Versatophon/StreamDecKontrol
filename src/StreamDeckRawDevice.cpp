@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <filesystem>
 
 std::wstring ConvertStringToWString(const std::string& pString)
 {
@@ -159,7 +160,16 @@ void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
 
 void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath)
 {
-    if( mDevice != nullptr )
+    std::filesystem::path lFilepath(pFilepath);
+
+    bool lExtensionValid = false;
+    lExtensionValid |=  (lFilepath.extension() == ".jpg");
+    lExtensionValid |=  (lFilepath.extension() == ".jpeg");
+    lExtensionValid |=  (lFilepath.extension() == ".bmp");
+
+    //TODO: need to check size here when the lib will be available
+
+    if( lExtensionValid && mDevice != nullptr )
     {
         size_t lReportSize = 1024;
         std::vector<uint8_t> lReport;
@@ -171,7 +181,6 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
         std::ifstream lFile(pFilepath, std::ios::binary | std::ios::ate);
         size_t lFileSize = lFile.tellg();
         lFile.seekg(0, std::ios_base::beg);
-
 
         size_t lRemainingBytesCount = lFileSize;
         size_t lPacketIndex = 0;

@@ -41,6 +41,7 @@ int32_t StreamDeckWindow::Event(SDL_Event *pEvent)
 
         case SDL_EVENT_DROP_FILE:
             std::cout << "File dropped: " << pEvent->drop.data << std::endl;
+            mDroppedFileQueue.push(pEvent->drop.data);
         break;
 
         case SDL_EVENT_DROP_POSITION:
@@ -120,14 +121,17 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
         }
 
         uint8_t lButtonIndex = 0;
-        for (size_t lRow = 0 ; lRow < 3 ; ++lRow )
+        for (size_t lRow = 0 ; lRow < 3 ; ++lRow)
         {
-            for (size_t lCol = 0 ; lCol < 5 ; ++lCol )
+            for (size_t lCol = 0 ; lCol < 5 ; ++lCol)
             {
                 bool lButtonPressed = pDevice->GetButtonPressed(lButtonIndex);
-                //ImGui::Checkbox(("##" + std::to_string(lButtonIndex)).c_str(), &lButtonPressed);
 
-                DisplayButton(lButtonPressed);
+                while(DisplayButton(lButtonPressed) && !mDroppedFileQueue.empty())
+                {//if mouse is above this button and we have a file drop queue
+                    std::string lFilePath = mDroppedFileQueue.front();mDroppedFileQueue.pop();
+                    pDevice->SetImageFromPath(lButtonIndex, lFilePath.c_str());
+                }
 
                 ++lButtonIndex;
 
@@ -137,37 +141,18 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
                 }
             }
         }
-        #if 0
-        if( ImGui::Button(("Set Img 0##" + lSerial).c_str()) )
-        {
-            pDevice->SetBlankImage(0);
-        }
 
-        //ImGui::SameLine();
-    
-        if( ImGui::Button(("Set Img 5##" + lSerial).c_str()) )
+        //flush file queue in order to not stack filepathes for the next drop
+        while(!mDroppedFileQueue.empty())
         {
-            pDevice->SetBlankImage(5);
+            mDroppedFileQueue.pop();
         }
-        ImGui::SameLine();
-        
-        if( ImGui::Button(("Set Img 10##" + lSerial).c_str()) )
-        {
-            pDevice->SetBlankImage(10);
-        }
-        ImGui::SameLine();
-        
-        if( ImGui::Button(("Reset##" + lSerial).c_str()) )
-        {
-            pDevice->Reset();
-        }
-        #endif
 
         ImGui::EndTabItem();
     }
 }
 
-void StreamDeckWindow::DisplayButton(bool pPressed)
+bool StreamDeckWindow::DisplayButton(bool pPressed)
 {
     uint32_t lMargin = 20;
     ImDrawList* lDrawList = ImGui::GetWindowDrawList();
@@ -178,12 +163,15 @@ void StreamDeckWindow::DisplayButton(bool pPressed)
     lButtonEndPos.y += 74;
 
     bool lMayDropSomething = mIsDroppingSomething;
+    bool lMouseIsAbove = true;
 
-    lMayDropSomething &= (mDropPositionX >= lButtonBeginPos.x);
-    lMayDropSomething &= (mDropPositionX <= lButtonEndPos.x);
+    lMouseIsAbove &= (mDropPositionX >= lButtonBeginPos.x);
+    lMouseIsAbove &= (mDropPositionX <= lButtonEndPos.x);
 
-    lMayDropSomething &= (mDropPositionY >= lButtonBeginPos.y);
-    lMayDropSomething &= (mDropPositionY <= lButtonEndPos.y);
+    lMouseIsAbove &= (mDropPositionY >= lButtonBeginPos.y);
+    lMouseIsAbove &= (mDropPositionY <= lButtonEndPos.y);
+
+    lMayDropSomething &= lMouseIsAbove;
 
     lDrawList->AddRect(lButtonBeginPos, lButtonEndPos, ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 10, 0, pPressed?2.f:1.f);
 
@@ -194,6 +182,8 @@ void StreamDeckWindow::DisplayButton(bool pPressed)
     }
 
     ImGui::Dummy(ImVec2(74 + lMargin, 74 + lMargin + 5));
+
+    return lMouseIsAbove;
 }
 
 void StreamDeckWindow::EnumerateDevices()
