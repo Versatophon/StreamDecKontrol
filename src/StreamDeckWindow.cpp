@@ -2,19 +2,29 @@
 
 #include <SDL3/SDL.h>
 
+#include <turbojpeg.h>
+
 #include <iostream>
+#include <fstream>
 
 #include <unordered_set>
 #include <list>
 
 #include "externals/imgui/imgui.h"
 
-StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr)
+#include <chrono>
+
+
+StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
+mCompressorInstance(tjInitCompress()),
+mDecompressorInstance(tjInitDecompress())
 {
 }
  
 StreamDeckWindow::~StreamDeckWindow()
 {
+    tjDestroy(mCompressorInstance);
+    tjDestroy(mDecompressorInstance);
 }
 
 int32_t StreamDeckWindow::Init()
@@ -130,7 +140,7 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
                 while(DisplayButton(lButtonPressed) && !mDroppedFileQueue.empty())
                 {//if mouse is above this button and we have a file drop queue
                     std::string lFilePath = mDroppedFileQueue.front();mDroppedFileQueue.pop();
-                    pDevice->SetImageFromPath(lButtonIndex, lFilePath.c_str());
+                    SetImage(pDevice, lButtonIndex, lFilePath.c_str());
                 }
 
                 ++lButtonIndex;
@@ -149,6 +159,55 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
         }
 
         ImGui::EndTabItem();
+    }
+}
+
+void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId, const char* pImagePath)
+{
+    pDevice->SetImageFromPath(pButtonId, pImagePath);
+
+    std::ifstream lFile(pImagePath, std::ios::binary | std::ios::ate);
+    size_t lFileSize = lFile.tellg();
+    lFile.seekg(0, std::ios_base::beg);
+
+    try 
+    {
+        std::chrono::system_clock::time_point lBeginTime = std::chrono::high_resolution_clock::now();
+
+        Image lImage
+        {
+            pImagePath,
+            -1,
+            -1,
+            std::vector<uint8_t>(lFileSize)
+        };
+
+
+        lFile.read((char*)lImage.FileData.data(), lFileSize);
+
+        if ( 0 != tjDecompressHeader(mDecompressorInstance, lImage.FileData.data(), lImage.FileData.size(), &lImage.Width, &lImage.Height) )
+        {
+            std::cout << "jpeg header extraction failed" << std::endl;
+        }
+        else
+        {
+            lImage.Content.resize(lImage.Width * lImage.Height * 4);
+
+            if( 0 != tjDecompress2(mDecompressorInstance, lImage.FileData.data(), lImage.FileData.size(), lImage.Content.data(), 
+                                   lImage.Width, lImage.Width*4, lImage.Height, TJPF_RGBA, TJFLAG_ACCURATEDCT))
+            {
+                std::cout << "jpeg decompression failed" << std::endl;
+            }
+        }
+
+        std::chrono::system_clock::time_point lEndTime = std::chrono::high_resolution_clock::now();
+        int64_t lDurationSinceLastLoop = std::chrono::duration_cast<std::chrono::microseconds>(lEndTime -lBeginTime).count();
+
+        std::cout << lImage.Filepath << "(" << lImage.Width << "x" << lImage.Height << ") in " << float(lDurationSinceLastLoop)/1000.f << " ms." << std::endl;
+    }
+    catch (const std::exception& lException)
+    {
+        std::cout << lException.what() << " on " << pImagePath << std::endl;
     }
 }
 

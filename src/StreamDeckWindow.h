@@ -3,10 +3,25 @@
 #include <string>
 #include <unordered_map>
 #include <queue>
+#include <vector>
+#include <cstdint>
 
 #include "ManagedWindow.h"
 
 #include "StreamDeckRawDevice.h"
+
+typedef void *tjhandle;
+
+#if 1
+struct Image
+{
+    std::string Filepath;
+    int32_t Width;
+    int32_t Height;
+    std::vector<uint8_t> FileData;
+    std::vector<uint8_t> Content;
+};
+#endif
 
 class StreamDeckWindow:public ManagedWindow
 {
@@ -25,6 +40,8 @@ private:
     std::unordered_map<std::string, StreamDeckRawDevice*> mDevicesMap;
 
     void DisplayDeviceTab(StreamDeckRawDevice* pDevice);
+
+    void SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId, const char* pImagePath);
     
     /**
      * Display a button with an image
@@ -40,5 +57,9 @@ private:
     //bool mHasFileDropped = false;
     std::queue<std::string> mDroppedFileQueue;
     float mDropPositionX;
-    float mDropPositionY; 
+    float mDropPositionY;
+
+    //TurboJpeg stuff
+    tjhandle mCompressorInstance;
+    tjhandle mDecompressorInstance;
 };
