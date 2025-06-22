@@ -58,6 +58,9 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "fstream": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "codecvt": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp"
     }
 }

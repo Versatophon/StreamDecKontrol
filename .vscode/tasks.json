@@ -34,6 +34,21 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "rebuild",
+            "type": "cppbuild",
+            "command": "make",
+            "options": {
+                "isShellCommand": true,
+                "showOutput": "always",
+                "cwd": "${workspaceRoot}/prj"
+            },
+            "args": ["rebuild"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

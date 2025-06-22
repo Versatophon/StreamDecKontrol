@@ -58,3 +58,8 @@ StreamDecKontrol: $(OBJS_LIST)
 # clean
 clean:
 	rm -rf $(OBJS_LIST)
+
+# rebuild
+rebuild:
+	make clean
+	make StreamDecKontrol
