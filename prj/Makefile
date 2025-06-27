@@ -1,5 +1,5 @@
 CC = g++
-OPTIONS = -g -m64 -std=c++17 -Wall -Wpsabi -lhidapi-hidraw -lc -lpthread -lSDL3 -lGL -lturbojpeg
+OPTIONS = -g -m64 -std=c++17 -Wall -Wpsabi -lhidapi-hidraw -lc -lpthread -lSDL3 -lGL -lturbojpeg -lfreeimage
 
 CFLAGS = #-L/usr/include/imgui/ -L/usr/include/imgui/backends/
 

@@ -17,6 +17,11 @@ Install TurboJpeg
 sudo apt install libturbojpeg-dev
 ```
 
+Install FreeImage
+```bash
+sudo apt install libfreeimage-dev
+```
+
 ## Build
 
 Open a terminal in `prj` directory, then call:

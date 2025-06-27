@@ -15,6 +15,8 @@ public:
 
     size_t GetTexture();
 
+    bool IsValid();
+
 private:
     StreamDeckSurfaceID* mID = nullptr;
 };

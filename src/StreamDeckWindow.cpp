@@ -178,9 +178,18 @@ void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
 
 void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId, const char* pImagePath)
 {
-    pDevice->SetImageFromPath(pButtonId, pImagePath);
 
-    mButtonImages[pButtonId] = new StreamDeckSurface(pImagePath, this, this);
+    StreamDeckSurface* lStreamDeckSurface = new StreamDeckSurface(pImagePath, this, this);
+    if( lStreamDeckSurface->IsValid() )
+    {
+        mButtonImages[pButtonId] = lStreamDeckSurface;
+        pDevice->SetImageFromPath(pButtonId, pImagePath);
+    }
+    else
+    {
+        delete lStreamDeckSurface;
+    }
+
 }
 
 #define BORDER_WIDTH 1
