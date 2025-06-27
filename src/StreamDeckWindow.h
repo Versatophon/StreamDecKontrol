@@ -20,6 +20,7 @@ public:
 
     tjhandle GetCompressor() override;
     tjhandle GetDecompressor() override;
+    tjhandle GetTransformer() override;
 
 protected:
     int32_t Init() override;
@@ -54,6 +55,7 @@ private:
     //TurboJpeg stuff
     tjhandle mCompressorInstance;
     tjhandle mDecompressorInstance;
+    tjhandle mTransformerInstance;
 
     std::vector<StreamDeckSurface*> mButtonImages;
 };

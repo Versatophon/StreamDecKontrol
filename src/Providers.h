@@ -17,4 +17,5 @@ class TurboJpegResourcesProvider
 public:
     virtual tjhandle GetCompressor() = 0;
     virtual tjhandle GetDecompressor() = 0;
+    virtual tjhandle GetTransformer() = 0;
 };

@@ -93,12 +93,29 @@ struct StreamDeckSurfaceID
         uint8_t* lBuffer = nullptr; 
         size_t lSize = 0;
 
+        uint8_t* lTransformedBuffer[1] = {nullptr}; 
+        size_t lTrasformedSize[1] = {0};
+        tjtransform lTransform[1] = {
+            tjtransform
+            {
+                {0,0,0,0},
+                TJXOP_ROT180,
+                TJXOPT_PERFECT,
+                nullptr,
+                nullptr
+            }
+        };
+
         tjCompress2(TjProvider->GetCompressor(), (uint8_t*)Surface->pixels, Surface->w, Surface->pitch, Surface->h, 
                     TJPF_BGRA, &lBuffer, &lSize, TJSAMP_444, 95, TJFLAG_ACCURATEDCT);
 
-        JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
+        tjTransform(TjProvider->GetTransformer(), lBuffer, lSize, 1, lTransformedBuffer, lTrasformedSize, lTransform, TJFLAG_ACCURATEDCT);
+
+        //JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
+        JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+lTrasformedSize[0]);
 
         tjFree(lBuffer);
+        tjFree(lTransformedBuffer[0]);
     }
 };
 

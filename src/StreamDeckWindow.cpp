@@ -17,7 +17,8 @@
 
 StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
 mCompressorInstance(tjInitCompress()),
-mDecompressorInstance(tjInitDecompress())
+mDecompressorInstance(tjInitDecompress()),
+mTransformerInstance(tjInitTransform())
 {
     mButtonImages.resize(15, nullptr);
 }
@@ -26,6 +27,7 @@ StreamDeckWindow::~StreamDeckWindow()
 {
     tjDestroy(mCompressorInstance);
     tjDestroy(mDecompressorInstance);
+    tjDestroy(mTransformerInstance);
 }
 
 tjhandle StreamDeckWindow::GetCompressor()
@@ -36,6 +38,11 @@ tjhandle StreamDeckWindow::GetCompressor()
 tjhandle StreamDeckWindow::GetDecompressor()
 {
     return mDecompressorInstance;
+}
+
+tjhandle StreamDeckWindow::GetTransformer()
+{
+    return mTransformerInstance;
 }
 
 int32_t StreamDeckWindow::Init()
