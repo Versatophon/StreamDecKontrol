@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
+#include "StreamDeckSurface.h"
+
 std::wstring ConvertStringToWString(const std::string& pString)
 {
     return std::wstring(pString.begin(), pString.end());
@@ -183,7 +185,6 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
         lFile.seekg(0, std::ios_base::beg);
 
         size_t lRemainingBytesCount = lFileSize;
-        size_t lPacketIndex = 0;
 
         struct PacketHeader
         {
@@ -219,6 +220,62 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
             lHeader.PacketIndex++;
         }
 
+    }
+}
+
+void StreamDeckRawDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSurface* pSurface)
+{
+    size_t lDataSize = pSurface->GetJpegSize();
+
+    if( lDataSize == 0 )
+    {
+        return;
+    }
+
+    uint8_t* lDataContent = pSurface->GetJpegData();
+
+    size_t lReportSize = 1024;
+    std::vector<uint8_t> lReport;
+    lReport.resize(lReportSize);
+
+    size_t lRemainingBytesCount = lDataSize;
+
+    struct PacketHeader
+    {
+        uint8_t ReportID;
+        uint8_t MessageID;
+        uint8_t KeyIndex;
+        uint8_t LastPacket;
+        uint16_t PacketSize;
+        uint16_t PacketIndex;
+    };
+
+    PacketHeader& lHeader = *(PacketHeader*)lReport.data();
+
+    lHeader.ReportID = 0x02;
+    lHeader.MessageID = 0x07;
+    lHeader.KeyIndex = pButtonIndex;
+    lHeader.PacketIndex = 0;
+
+    char* lPacketDataPointer = (char*)(lReport.data()+sizeof(PacketHeader));
+    size_t lMaxPacketCapacity = lReportSize-sizeof(PacketHeader);
+
+    while (lRemainingBytesCount > 0)
+    {
+        lHeader.PacketSize = std::min(lMaxPacketCapacity, lRemainingBytesCount);
+
+        memcpy(lPacketDataPointer, lDataContent + (lHeader.PacketIndex*lMaxPacketCapacity), lHeader.PacketSize);
+
+        //lFile.read(lPacketDataPointer, lHeader.PacketSize);
+
+        lRemainingBytesCount -= lHeader.PacketSize;
+
+        lHeader.LastPacket = lRemainingBytesCount > 0 ? 0x00 : 0x01;
+
+        //Need to have complete report size
+        hid_write(mDevice, lReport.data(), lReportSize);
+
+        lHeader.PacketIndex++;
     }
 }
 

@@ -9,6 +9,8 @@ extern "C"
     #include <hidapi/hidapi.h>
 }
 
+class StreamDeckSurface;
+
 class StreamDeckRawDevice
 {
 public:
@@ -28,6 +30,8 @@ public:
     void SetScreenSaverTime(uint32_t pTiming);
 
     void SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath);
+
+    void SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSurface* pSurface);
 
     const char* GetSerial() const;
 

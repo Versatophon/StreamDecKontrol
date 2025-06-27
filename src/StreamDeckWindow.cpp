@@ -183,7 +183,8 @@ void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId,
     if( lStreamDeckSurface->IsValid() )
     {
         mButtonImages[pButtonId] = lStreamDeckSurface;
-        pDevice->SetImageFromPath(pButtonId, pImagePath);
+        //pDevice->SetImageFromPath(pButtonId, pImagePath);
+        pDevice->SetImageFromSurface(pButtonId, lStreamDeckSurface);
     }
     else
     {
@@ -277,7 +278,7 @@ void StreamDeckWindow::EnumerateDevices()
             
             //need to update here in order to have connection to send the image
             mDevicesMap[lSerial]->Update();
-            mDevicesMap[lSerial]->SetImageFromPath(0, "../resources/gimp.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(0, "../resources/gimp.jpg");
         }
     }
 

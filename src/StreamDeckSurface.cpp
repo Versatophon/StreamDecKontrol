@@ -31,6 +31,8 @@ struct StreamDeckSurfaceID
     //ImageType RawType = ImageType::UKN;
     //std::vector<uint8_t> RawFileData;
 
+    std::vector<uint8_t> JpgFileData;
+
     bool IsValid = false;
 
     SDL_Surface* Surface;
@@ -69,7 +71,7 @@ struct StreamDeckSurfaceID
 
         FIBITMAP* lBitmap = FreeImage_LoadFromMemory(FIF_BMP, lFiMemory);
         FIBITMAP* lBitmapBGRA = FreeImage_ConvertTo32Bits(lBitmap);
-        FreeImage_FlipHorizontal(lBitmapBGRA);
+        //FreeImage_FlipHorizontal(lBitmapBGRA);
         FreeImage_FlipVertical(lBitmapBGRA);
 
         Surface = SDL_CreateSurface(FreeImage_GetWidth(lBitmapBGRA), FreeImage_GetHeight(lBitmapBGRA), SDL_PIXELFORMAT_BGRA32);
@@ -84,6 +86,19 @@ struct StreamDeckSurfaceID
         FreeImage_CloseMemory(lFiMemory);
 
         IsValid = true;
+    }
+
+    void GenerateInternalJpegData()
+    {
+        uint8_t* lBuffer = nullptr; 
+        size_t lSize = 0;
+
+        tjCompress2(TjProvider->GetCompressor(), (uint8_t*)Surface->pixels, Surface->w, Surface->pitch, Surface->h, 
+                    TJPF_BGRA, &lBuffer, &lSize, TJSAMP_444, 95, TJFLAG_ACCURATEDCT);
+
+        JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
+
+        tjFree(lBuffer);
     }
 };
 
@@ -180,6 +195,8 @@ StreamDeckSurface::StreamDeckSurface(const char* pFilepath, SdlResourcesProvider
 
     if(mID->IsValid )
     {
+        mID->GenerateInternalJpegData();
+
         mID->Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), mID->Surface);
     }
 }
@@ -201,4 +218,13 @@ bool StreamDeckSurface::IsValid()
 {
     return mID->IsValid;
 }
-  
+
+size_t StreamDeckSurface::GetJpegSize()
+{
+    return mID->JpgFileData.size();
+}
+
+uint8_t* StreamDeckSurface::GetJpegData()
+{
+    return mID->JpgFileData.data();
+}

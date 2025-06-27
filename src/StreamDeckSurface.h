@@ -14,9 +14,12 @@ public:
     ~StreamDeckSurface();
 
     size_t GetTexture();
-
+    
     bool IsValid();
 
+    size_t GetJpegSize();
+    uint8_t* GetJpegData();
+    
 private:
     StreamDeckSurfaceID* mID = nullptr;
 };
