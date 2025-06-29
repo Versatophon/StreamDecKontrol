@@ -93,7 +93,7 @@ struct StreamDeckSurfaceID
     void GenerateSurfaceFromGif(std::vector<uint8_t>& pRawFileData)
     {
         FIMEMORY* lFiMemory = FreeImage_OpenMemory(pRawFileData.data(), pRawFileData.size());
-        FIMULTIBITMAP* lGifImage = FreeImage_LoadMultiBitmapFromMemory(FIF_GIF, lFiMemory);
+        FIMULTIBITMAP* lGifImage = FreeImage_LoadMultiBitmapFromMemory(FIF_GIF, lFiMemory, GIF_PLAYBACK);
 
         int32_t lImageCount = FreeImage_GetPageCount(lGifImage);
 
