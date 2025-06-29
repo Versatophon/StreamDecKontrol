@@ -20,6 +20,24 @@ StreamDeckDevice::~StreamDeckDevice()
     delete mPhysicalDevice;
 }
 
+void StreamDeckDevice::SetButtonImage(size_t pButtonIndex, const char* pFilePath)
+{
+    
+    if( pButtonIndex < mStreamDeckSurfaces.size() )
+    {
+        //TODO: factorize
+        StreamDeckSurface* lStreamDeckSurface = new StreamDeckSurface(pFilePath, mSdlResourcesProvider, mTurboJpegResourcesProvider);
+        if( lStreamDeckSurface->IsValid() )
+        {
+            ReplaceSurface(pButtonIndex, lStreamDeckSurface);
+        }
+        else
+        {
+            delete lStreamDeckSurface;
+        }
+    }
+}
+
 bool StreamDeckDevice::Update(float pFrameDuration)
 {
     bool lUpdated = false;

@@ -15,6 +15,8 @@ public:
     StreamDeckDevice(const char* pDeviceSerial, SdlResourcesProvider* pSdlResourcesProvider, TurboJpegResourcesProvider* pTurboJpegResourcesProvider, FileDropProvider* pFileDropProvider);
     ~StreamDeckDevice();
 
+    void SetButtonImage(size_t pButtonIndex, const char* pFilePath);
+
     bool Update(float pFrameDuration);
 
     void DisplayDeviceTab();
