@@ -25,6 +25,7 @@ protected:
     virtual int32_t Iterate();
     virtual void Quit();
 
+    float GetLastFrameDuration();
     
     int32_t mArgC = 0;
     char** mArgV = nullptr;

@@ -26,6 +26,9 @@ struct ManagedWindowID
     SDL_Window *SdlWindow = nullptr;
     SDL_Renderer *SdlRenderer = nullptr;
 
+    uint64_t LastFrameRawTime = SDL_MAX_UINT64;
+    float LastFrameDuration = 0.f;
+
     ManagedWindowID(ManagedWindow* pWindow):
     Window(pWindow)
     {
@@ -43,6 +46,19 @@ struct ManagedWindowID
 
     int32_t Iterate()
     {
+        static const double lCounterFrequency = double(SDL_GetPerformanceFrequency());
+        uint64_t lCurrentRawTime = SDL_GetPerformanceCounter();
+
+        if( LastFrameRawTime < lCurrentRawTime)
+        {
+            LastFrameDuration = (double(lCurrentRawTime - LastFrameRawTime) / double(lCounterFrequency));
+        }
+        else
+        {//Consider null duration here
+            LastFrameDuration = 0.f;
+        }
+        LastFrameRawTime = lCurrentRawTime;
+
         return Window->InternalIterate();
     }
 
@@ -113,6 +129,11 @@ int32_t ManagedWindow::Iterate()
 
 void ManagedWindow::Quit()
 {
+}
+
+float ManagedWindow::GetLastFrameDuration()
+{
+    return mID->LastFrameDuration;
 }
 
 int32_t ManagedWindow::InternalInit()
