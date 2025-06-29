@@ -37,15 +37,8 @@ struct StreamDeckSurfaceID
     std::string Filepath;
     SdlResourcesProvider* SdlProvider;
     TurboJpegResourcesProvider* TjProvider;
-    //bool IsValid = false;
 
     std::vector<StreamDeckFrame> Frames;
-
-    #if 0
-    std::vector<uint8_t> JpgFileData;
-    SDL_Surface* Surface;
-    SDL_Texture* Texture;
-    #endif
 
     void GenerateSurfaceFromJpg(std::vector<uint8_t>& pRawFileData)
     {
@@ -61,7 +54,6 @@ struct StreamDeckSurfaceID
             StreamDeckFrame lFrame;
 
             lFrame.Surface = SDL_CreateSurface(lWidth, lHeight, SDL_PIXELFORMAT_BGRA32);
-            //lImage.Content.resize(lImage.Width * lImage.Height * 4);
 
             if( 0 != tjDecompress2(TjProvider->GetDecompressor(), pRawFileData.data(), pRawFileData.size(), 
                                    (uint8_t*)lFrame.Surface->pixels, lFrame.Surface->w, lFrame.Surface->pitch, lFrame.Surface->h,
@@ -73,11 +65,7 @@ struct StreamDeckSurfaceID
             else
             {
                 Frames.push_back(lFrame);
-                //IsValid = true;
             }
-
-            //Texture = SDL_CreateTextureFromSurface(SdlProvider->GetSdlRenderer(), Surface);
-
         }
     }
 
@@ -87,7 +75,6 @@ struct StreamDeckSurfaceID
 
         FIBITMAP* lBitmap = FreeImage_LoadFromMemory(FIF_BMP, lFiMemory);
         FIBITMAP* lBitmapBGRA = FreeImage_ConvertTo32Bits(lBitmap);
-        //FreeImage_FlipHorizontal(lBitmapBGRA);
         FreeImage_FlipVertical(lBitmapBGRA);
 
         StreamDeckFrame lFrame;
@@ -157,7 +144,6 @@ struct StreamDeckSurfaceID
 
             tjTransform(TjProvider->GetTransformer(), lBuffer, lSize, 1, lTransformedBuffer, lTrasformedSize, lTransform, TJFLAG_ACCURATEDCT);
 
-            //JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
             lFrame.JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+lTrasformedSize[0]);
         }
 
@@ -171,7 +157,6 @@ ImageType GetImageType(std::vector<uint8_t>& pFileData)
     size_t lFileSize = pFileData.size();
     if( lFileSize > 6)
     {//we check BMP here
-        //if( pFileData[0] == 'B' && pFileData[1] == 'M')
         if( *(uint16_t*)pFileData.data() == 0x4D42/*'BM'*/ )
         {
             size_t lSizeFromHeader = size_t(*(uint32_t*)(pFileData.data()+2));
@@ -267,13 +252,6 @@ StreamDeckSurface::StreamDeckSurface(const char* pFilepath, SdlResourcesProvider
     {
         lFrame.Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), lFrame.Surface);
     }
-
-    //if(mID->Frames.empty() )
-    //{
-    //    mID->GenerateInternalJpegData();
-//
-    //    mID->Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), mID->Surface);
-    //}
 }
 
 StreamDeckSurface::~StreamDeckSurface()

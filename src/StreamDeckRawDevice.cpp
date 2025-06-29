@@ -68,21 +68,6 @@ bool StreamDeckRawDevice::Update()
                         //ButtonChanged(i, lCurrentState);
                     }
                 }
-#if 0
-                std::wcout << L"XMMMMMX" << std::endl;
-                for ( size_t j = 0 ; j < 3 ; ++j )
-                {
-                    std::wcout << L"X";
-                    
-                    for ( size_t i = 0 ; i < 5; ++i )
-                    {
-                        std::wcout << (mBuffer[j * 5 + 4 + i] ? L"_" : L"-");
-                    }
-                    
-                    std::wcout << L"X" << std::endl;
-                }
-                std::wcout << L"XWWWWWX" << std::endl<< std::endl;
-#endif
                 lUpdated = true;
             }
             else
@@ -170,7 +155,6 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
     lExtensionValid |=  (lFilepath.extension() == ".bmp");
 
     //TODO: need to check size here when the lib will be available
-
     if( lExtensionValid && mDevice != nullptr )
     {
         size_t lReportSize = 1024;
@@ -179,7 +163,6 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
 
         memset(lReport.data(), 0, lReportSize);
 
-        //"/home/versatophon/Images/gimp.jpg"
         std::ifstream lFile(pFilepath, std::ios::binary | std::ios::ate);
         size_t lFileSize = lFile.tellg();
         lFile.seekg(0, std::ios_base::beg);
@@ -265,8 +248,6 @@ void StreamDeckRawDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSu
         lHeader.PacketSize = std::min(lMaxPacketCapacity, lRemainingBytesCount);
 
         memcpy(lPacketDataPointer, lDataContent + (lHeader.PacketIndex*lMaxPacketCapacity), lHeader.PacketSize);
-
-        //lFile.read(lPacketDataPointer, lHeader.PacketSize);
 
         lRemainingBytesCount -= lHeader.PacketSize;
 

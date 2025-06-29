@@ -75,10 +75,6 @@ int32_t StreamDeckWindow::Event(SDL_Event *pEvent)
         case SDL_EVENT_DROP_POSITION:
             mDropPositionX = pEvent->drop.x;
             mDropPositionY = pEvent->drop.y;
-            //std::cout << "File moving: " << pEvent->drop.x << ";" << pEvent->drop.y << std::endl;
-
-        
-        //std::cout << "File data: " << pEvent->drop.data << std::endl;
         break;
 
     }
@@ -92,8 +88,6 @@ int32_t StreamDeckWindow::Iterate()
     //TODO: may need to perform this less often
     EnumerateDevices();
     
-    //mCounter++;
-
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
@@ -105,17 +99,11 @@ int32_t StreamDeckWindow::Iterate()
         {
             mDevicePair.second->Update();
             std::string lDeviceSerial = mDevicePair.first;
-            //ImGui::Text(lDeviceSerial.c_str());
-            
             DisplayDeviceTab(mDevicePair.second);
-            
-
         }
        
-            ImGui::EndTabBar();
+        ImGui::EndTabBar();
     }
-
-    //ImGui::DragInt("Compteur", &mCounter);
 
     ImGui::End();
 
@@ -190,7 +178,6 @@ void StreamDeckWindow::SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId,
     if( lStreamDeckSurface->IsValid() )
     {
         mButtonImages[pButtonId] = lStreamDeckSurface;
-        //pDevice->SetImageFromPath(pButtonId, pImagePath);
         pDevice->SetImageFromSurface(pButtonId, lStreamDeckSurface);
     }
     else
@@ -268,8 +255,6 @@ void StreamDeckWindow::EnumerateDevices()
             std::wstring lWideString(cur_dev->serial_number);
             std::string lSerial = std::string( lWideString.begin(), lWideString.end() );
             lConnectedSerials.insert(lSerial);
-            
-            //mDevicesMap[lSerial] = new StreamDeckRawDevice(cur_dev->vendor_id, cur_dev->product_id, lSerial.c_str());
         }
 	}
 

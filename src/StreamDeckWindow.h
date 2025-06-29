@@ -29,7 +29,6 @@ protected:
     void Quit() override;
 
 private:
-    //int32_t mCounter = 0; 
     std::unordered_map<std::string, StreamDeckRawDevice*> mDevicesMap;
 
     void DisplayDeviceTab(StreamDeckRawDevice* pDevice);
@@ -47,7 +46,6 @@ private:
     void EnumerateDevices();
 
     bool mIsDroppingSomething = false;
-    //bool mHasFileDropped = false;
     std::queue<std::string> mDroppedFileQueue;
     float mDropPositionX;
     float mDropPositionY;
