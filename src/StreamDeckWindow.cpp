@@ -285,7 +285,11 @@ void StreamDeckWindow::EnumerateDevices()
             
             //need to update here in order to have connection to send the image
             mDevicesMap[lSerial]->Update();
-            //mDevicesMap[lSerial]->SetImageFromPath(0, "../resources/gimp.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(0, "/home/versatophon/Images/smiley72.gif");
+            //mDevicesMap[lSerial]->SetImageFromPath(1, "/home/versatophon/Images/gimp.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(2, "/home/versatophon/Images/gimp.bmp");
+            //mDevicesMap[lSerial]->SetImageFromPath(3, "/home/versatophon/Images/27.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(4, "/home/versatophon/Images/27.2.jpg");
         }
     }
 

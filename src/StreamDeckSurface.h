@@ -17,8 +17,9 @@ public:
     
     bool IsValid();
 
-    size_t GetJpegSize();
-    uint8_t* GetJpegData();
+    size_t GetFrameCount();
+    size_t GetJpegSize(size_t pFrameIndex = 0);
+    uint8_t* GetJpegData(size_t pFrameIndex = 0);
     
 private:
     StreamDeckSurfaceID* mID = nullptr;

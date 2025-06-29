@@ -23,20 +23,29 @@ enum class ImageType
     GIF
 };
 
+struct StreamDeckFrame
+{   
+    int32_t Duration = -1;//-1 means infinite
+    std::vector<uint8_t> JpgFileData;
+    SDL_Surface* Surface;
+    SDL_Texture* Texture;
+};
+
+
 struct StreamDeckSurfaceID
 {
     std::string Filepath;
     SdlResourcesProvider* SdlProvider;
     TurboJpegResourcesProvider* TjProvider;
-    //ImageType RawType = ImageType::UKN;
-    //std::vector<uint8_t> RawFileData;
+    //bool IsValid = false;
 
+    std::vector<StreamDeckFrame> Frames;
+
+    #if 0
     std::vector<uint8_t> JpgFileData;
-
-    bool IsValid = false;
-
     SDL_Surface* Surface;
     SDL_Texture* Texture;
+    #endif
 
     void GenerateSurfaceFromJpg(std::vector<uint8_t>& pRawFileData)
     {
@@ -49,19 +58,26 @@ struct StreamDeckSurfaceID
         }
         else
         {
-            Surface = SDL_CreateSurface(lWidth, lHeight, SDL_PIXELFORMAT_BGRA32);
+            StreamDeckFrame lFrame;
+
+            lFrame.Surface = SDL_CreateSurface(lWidth, lHeight, SDL_PIXELFORMAT_BGRA32);
             //lImage.Content.resize(lImage.Width * lImage.Height * 4);
 
             if( 0 != tjDecompress2(TjProvider->GetDecompressor(), pRawFileData.data(), pRawFileData.size(), 
-                                   (uint8_t*)Surface->pixels, Surface->w, Surface->pitch, Surface->h,
+                                   (uint8_t*)lFrame.Surface->pixels, lFrame.Surface->w, lFrame.Surface->pitch, lFrame.Surface->h,
                                    TJPF_BGRA, TJFLAG_ACCURATEDCT))
             {
                 std::cout << "jpeg decompression failed" << std::endl;
+                SDL_DestroySurface(lFrame.Surface);
+            }
+            else
+            {
+                Frames.push_back(lFrame);
+                //IsValid = true;
             }
 
             //Texture = SDL_CreateTextureFromSurface(SdlProvider->GetSdlRenderer(), Surface);
 
-            IsValid = true;
         }
     }
 
@@ -74,18 +90,46 @@ struct StreamDeckSurfaceID
         //FreeImage_FlipHorizontal(lBitmapBGRA);
         FreeImage_FlipVertical(lBitmapBGRA);
 
-        Surface = SDL_CreateSurface(FreeImage_GetWidth(lBitmapBGRA), FreeImage_GetHeight(lBitmapBGRA), SDL_PIXELFORMAT_BGRA32);
-        
-        memcpy(Surface->pixels, FreeImage_GetBits(lBitmapBGRA), Surface->h * Surface->pitch);
+        StreamDeckFrame lFrame;
+        lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lBitmapBGRA), FreeImage_GetHeight(lBitmapBGRA), SDL_PIXELFORMAT_BGRA32);
+        memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lBitmapBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
 
-        //Texture = SDL_CreateTextureFromSurface(SdlProvider->GetSdlRenderer(), Surface);
+        Frames.push_back(lFrame);
 
         //Free memory
         FreeImage_Unload(lBitmapBGRA);
         FreeImage_Unload(lBitmap);
         FreeImage_CloseMemory(lFiMemory);
 
-        IsValid = true;
+        //IsValid = true;
+    }
+
+    void GenerateSurfaceFromGif(std::vector<uint8_t>& pRawFileData)
+    {
+        FIMEMORY* lFiMemory = FreeImage_OpenMemory(pRawFileData.data(), pRawFileData.size());
+        FIMULTIBITMAP* lGifImage = FreeImage_LoadMultiBitmapFromMemory(FIF_GIF, lFiMemory);
+
+        int32_t lImageCount = FreeImage_GetPageCount(lGifImage);
+
+        for ( uint32_t i = 0 ; i < lImageCount ; ++i )
+        {
+            FIBITMAP* lFrameImage = FreeImage_LockPage(lGifImage, i);
+            FIBITMAP* lFrameBGRA = FreeImage_ConvertTo32Bits(lFrameImage);
+            FreeImage_FlipVertical(lFrameBGRA);
+            
+
+            StreamDeckFrame lFrame;
+            lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lFrameBGRA), FreeImage_GetHeight(lFrameBGRA), SDL_PIXELFORMAT_BGRA32);
+            memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lFrameBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
+
+            Frames.push_back(lFrame);
+            
+            FreeImage_Unload(lFrameBGRA);
+            FreeImage_UnlockPage(lGifImage, lFrameImage, false);
+        }
+
+        FreeImage_CloseMultiBitmap(lGifImage);
+        FreeImage_CloseMemory(lFiMemory);
     }
 
     void GenerateInternalJpegData()
@@ -106,13 +150,16 @@ struct StreamDeckSurfaceID
             }
         };
 
-        tjCompress2(TjProvider->GetCompressor(), (uint8_t*)Surface->pixels, Surface->w, Surface->pitch, Surface->h, 
-                    TJPF_BGRA, &lBuffer, &lSize, TJSAMP_444, 95, TJFLAG_ACCURATEDCT);
+        for (StreamDeckFrame& lFrame: Frames)
+        {
+            tjCompress2(TjProvider->GetCompressor(), (uint8_t*)lFrame.Surface->pixels, lFrame.Surface->w, lFrame.Surface->pitch, lFrame.Surface->h, 
+                        TJPF_BGRA, &lBuffer, &lSize, TJSAMP_444, 95, TJFLAG_ACCURATEDCT);
 
-        tjTransform(TjProvider->GetTransformer(), lBuffer, lSize, 1, lTransformedBuffer, lTrasformedSize, lTransform, TJFLAG_ACCURATEDCT);
+            tjTransform(TjProvider->GetTransformer(), lBuffer, lSize, 1, lTransformedBuffer, lTrasformedSize, lTransform, TJFLAG_ACCURATEDCT);
 
-        //JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
-        JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+lTrasformedSize[0]);
+            //JpgFileData = std::vector<uint8_t>(lBuffer, lBuffer+lSize);
+            lFrame.JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+lTrasformedSize[0]);
+        }
 
         tjFree(lBuffer);
         tjFree(lTransformedBuffer[0]);
@@ -208,40 +255,72 @@ StreamDeckSurface::StreamDeckSurface(const char* pFilepath, SdlResourcesProvider
         case ImageType::BMP:
             mID->GenerateSurfaceFromBmp(lRawFileData);
             break;
+
+        case ImageType::GIF:
+            mID->GenerateSurfaceFromGif(lRawFileData);
+            break;
     }
 
-    if(mID->IsValid )
+    mID->GenerateInternalJpegData();
+    //TODO: move to Internal data method
+    for (StreamDeckFrame& lFrame: mID->Frames)
     {
-        mID->GenerateInternalJpegData();
-
-        mID->Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), mID->Surface);
+        lFrame.Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), lFrame.Surface);
     }
+
+    //if(mID->Frames.empty() )
+    //{
+    //    mID->GenerateInternalJpegData();
+//
+    //    mID->Texture = SDL_CreateTextureFromSurface(mID->SdlProvider->GetSdlRenderer(), mID->Surface);
+    //}
 }
 
 StreamDeckSurface::~StreamDeckSurface()
 {
-    SDL_DestroyTexture(mID->Texture);
-    SDL_DestroySurface(mID->Surface);
-
+    for (StreamDeckFrame& lFrame: mID->Frames)
+    {
+        SDL_DestroyTexture(lFrame.Texture);
+        SDL_DestroySurface(lFrame.Surface);
+    }
+    
     delete mID;
 }
 
 size_t StreamDeckSurface::GetTexture()
 {
-    return (size_t)mID->Texture;
+    if ( mID->Frames.empty() )
+    {
+        return 0;
+    }
+
+    return (size_t)mID->Frames[0].Texture;
 }
 
 bool StreamDeckSurface::IsValid()
 {
-    return mID->IsValid;
+    return !mID->Frames.empty();
 }
 
-size_t StreamDeckSurface::GetJpegSize()
+size_t StreamDeckSurface::GetFrameCount()
 {
-    return mID->JpgFileData.size();
+    return mID->Frames.size();
 }
 
-uint8_t* StreamDeckSurface::GetJpegData()
+size_t StreamDeckSurface::GetJpegSize(size_t pFrameIndex)
 {
-    return mID->JpgFileData.data();
+    if( pFrameIndex < mID->Frames.size() )
+    {
+        return mID->Frames[pFrameIndex].JpgFileData.size();
+    }
+    return 0;
+}
+
+uint8_t* StreamDeckSurface::GetJpegData(size_t pFrameIndex)
+{
+    if( pFrameIndex < mID->Frames.size() )
+    {
+        return mID->Frames[pFrameIndex].JpgFileData.data();
+    }
+    return nullptr;
 }
