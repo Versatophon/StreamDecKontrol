@@ -103,9 +103,19 @@ struct StreamDeckSurfaceID
             FIBITMAP* lFrameImage = FreeImage_LockPage(lGifImage, i);
             FIBITMAP* lFrameBGRA = FreeImage_ConvertTo32Bits(lFrameImage);
             FreeImage_FlipVertical(lFrameBGRA);
-            
 
+            FITAG* lTag = nullptr;
             StreamDeckFrame lFrame;
+
+            if( FreeImage_GetMetadata(FIMD_ANIMATION, lFrameImage, "FrameTime", &lTag) )
+            {
+                lFrame.Duration = *(uint32_t*)FreeImage_GetTagValue(lTag);
+            }
+            else
+            {//Animation time is missing on frame metadata
+                lFrame.Duration = 100;//100 ms appears to be the default duration
+            }
+
             lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lFrameBGRA), FreeImage_GetHeight(lFrameBGRA), SDL_PIXELFORMAT_BGRA32);
             memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lFrameBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
 
