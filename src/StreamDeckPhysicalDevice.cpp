@@ -1,4 +1,4 @@
-#include "StreamDeckRawDevice.h"
+#include "StreamDeckPhysicalDevice.h"
 
 #include <iostream>
 #include <cstring>
@@ -17,14 +17,14 @@ std::string ConvertWStringToString(const std::wstring& pString)
     return std::string(pString.begin(), pString.end());
 }
 
-StreamDeckRawDevice::StreamDeckRawDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial):
+StreamDeckPhysicalDevice::StreamDeckPhysicalDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial):
     mVendorID(pVendorID),
     mProductID(pProductID),
     mSerial(pSerial)
 {
 }
 
-bool StreamDeckRawDevice::Update()
+bool StreamDeckPhysicalDevice::Update()
 {
     bool lUpdated = false;
 
@@ -80,7 +80,7 @@ bool StreamDeckRawDevice::Update()
     return lUpdated;
 }
 
-void StreamDeckRawDevice::Reset()
+void StreamDeckPhysicalDevice::Reset()
 {
     if(mDevice != nullptr )
     {
@@ -99,7 +99,7 @@ void StreamDeckRawDevice::Reset()
 /**
  * \param[in] pBrightness brightness to set [0-100]
  */
-void StreamDeckRawDevice::SetBrightness(uint8_t pBrightness)
+void StreamDeckPhysicalDevice::SetBrightness(uint8_t pBrightness)
 {
     if( mDevice != nullptr && pBrightness <= 100)
     {
@@ -119,12 +119,12 @@ void StreamDeckRawDevice::SetBrightness(uint8_t pBrightness)
     }
 }
 
-uint8_t StreamDeckRawDevice::GetBrightness() const
+uint8_t StreamDeckPhysicalDevice::GetBrightness() const
 {
     return mBrightness;
 }
 
-void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
+void StreamDeckPhysicalDevice::SetScreenSaverTime(uint32_t pTiming)
 {
     if( mDevice != nullptr )
     {
@@ -145,7 +145,7 @@ void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
     }
 }
 
-void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath)
+void StreamDeckPhysicalDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath)
 {
     std::filesystem::path lFilepath(pFilepath);
 
@@ -206,7 +206,7 @@ void StreamDeckRawDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFi
     }
 }
 
-void StreamDeckRawDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSurface* pSurface)
+void StreamDeckPhysicalDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSurface* pSurface)
 {
     size_t lDataSize = pSurface->GetJpegSize();
 
@@ -260,12 +260,12 @@ void StreamDeckRawDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSu
     }
 }
 
-const char* StreamDeckRawDevice::GetSerial() const
+const char* StreamDeckPhysicalDevice::GetSerial() const
 {
     return mSerial.c_str();
 }
 
-bool StreamDeckRawDevice::GetButtonPressed(uint8_t pButtonIndex) const
+bool StreamDeckPhysicalDevice::GetButtonPressed(uint8_t pButtonIndex) const
 {
     if( pButtonIndex < 15)
     {
@@ -274,7 +274,7 @@ bool StreamDeckRawDevice::GetButtonPressed(uint8_t pButtonIndex) const
     return false;
 }
 
-void StreamDeckRawDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
+void StreamDeckPhysicalDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
 {
     if (pIndex == 14 && !pPressed)
     {

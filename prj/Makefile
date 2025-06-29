@@ -12,9 +12,10 @@ TARGET_DIR = ../bin/
 
 OBJS_LIST = $(OBJS_DIR)main.o\
 			$(OBJS_DIR)ManagedWindow.o\
-			$(OBJS_DIR)StreamDeckWindow.o\
+			$(OBJS_DIR)StreamDeckDevice.o\
+			$(OBJS_DIR)StreamDeckPhysicalDevice.o\
 			$(OBJS_DIR)StreamDeckSurface.o\
-			$(OBJS_DIR)StreamDeckRawDevice.o\
+			$(OBJS_DIR)StreamDeckWindow.o\
 			$(OBJS_DIR)imgui_draw.o\
 			$(OBJS_DIR)imgui_impl_sdl3.o\
 			$(OBJS_DIR)imgui_impl_sdlrenderer3.o\
@@ -25,16 +26,19 @@ OBJS_LIST = $(OBJS_DIR)main.o\
 $(OBJS_DIR)main.o: $(SRC_DIR)main.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJS_DIR)StreamDeckRawDevice.o: $(SRC_DIR)StreamDeckRawDevice.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
-
 $(OBJS_DIR)ManagedWindow.o: $(SRC_DIR)ManagedWindow.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJS_DIR)StreamDeckWindow.o: $(SRC_DIR)StreamDeckWindow.cpp
+$(OBJS_DIR)StreamDeckDevice.o: $(SRC_DIR)StreamDeckDevice.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckPhysicalDevice.o: $(SRC_DIR)StreamDeckPhysicalDevice.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR)StreamDeckSurface.o: $(SRC_DIR)StreamDeckSurface.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckWindow.o: $(SRC_DIR)StreamDeckWindow.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR)imgui_draw.o: $(IMGUI_DIR)imgui_draw.cpp

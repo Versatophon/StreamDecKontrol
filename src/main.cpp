@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <thread>
-#include "StreamDeckRawDevice.h"
+#include "StreamDeckPhysicalDevice.h"
 
 #include "StreamDeckWindow.h"
 

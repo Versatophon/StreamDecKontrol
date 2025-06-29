@@ -11,10 +11,10 @@ extern "C"
 
 class StreamDeckSurface;
 
-class StreamDeckRawDevice
+class StreamDeckPhysicalDevice
 {
 public:
-    StreamDeckRawDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial);
+    StreamDeckPhysicalDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial);
     
     bool Update();
 

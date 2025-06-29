@@ -7,20 +7,33 @@
 #include <cstdint>
 
 #include "ManagedWindow.h"
+#include "FileDropProvider.h"
 
-#include "StreamDeckRawDevice.h"
+//#include "StreamDeckPhysicalDevice.h"
 
-class StreamDeckSurface;
+extern "C"
+{//TODO: need to move this
+    #include <hidapi/hidapi.h>
+}
 
-class StreamDeckWindow:public ManagedWindow, public TurboJpegResourcesProvider
+class StreamDeckDevice;
+
+class StreamDeckWindow:public ManagedWindow, public TurboJpegResourcesProvider, public FileDropProvider
 {
 public:
     StreamDeckWindow();
     ~StreamDeckWindow();
 
+    //TurboJpegResourcesProvider
     tjhandle GetCompressor() override;
     tjhandle GetDecompressor() override;
     tjhandle GetTransformer() override;
+
+    //FileDropProvider
+    const char* GetQueuedFilepath() override;
+    bool DropPending() override;
+    float DropPositionX() override;
+    float DropPositionY() override;
 
 protected:
     int32_t Init() override;
@@ -29,19 +42,7 @@ protected:
     void Quit() override;
 
 private:
-    std::unordered_map<std::string, StreamDeckRawDevice*> mDevicesMap;
-
-    void DisplayDeviceTab(StreamDeckRawDevice* pDevice);
-
-    void SetImage(StreamDeckRawDevice* pDevice, uint8_t pButtonId, const char* pImagePath);
-    
-    /**
-     * Display a button with an image
-     * 
-     * \param[in] pPressed Set it to true if hardware button is pressed
-     * \return True if mouse cursor is above 
-     */
-    bool DisplayButton(bool pPressed, StreamDeckSurface* pImage);
+    std::unordered_map<std::string, StreamDeckDevice*> mDevicesMap;
 
     void EnumerateDevices();
 
@@ -55,5 +56,6 @@ private:
     tjhandle mDecompressorInstance;
     tjhandle mTransformerInstance;
 
-    std::vector<StreamDeckSurface*> mButtonImages;
+    //DnD path storage
+    std::string mLastDroppedFilepath;
 };

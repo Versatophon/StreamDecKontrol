@@ -26,11 +26,11 @@ enum class ImageType
 struct StreamDeckFrame
 {   
     int32_t Duration = -1;//-1 means infinite
+    int32_t StackedDisplayedDuration = 0;
     std::vector<uint8_t> JpgFileData;
     SDL_Surface* Surface;
     SDL_Texture* Texture;
 };
-
 
 struct StreamDeckSurfaceID
 {
@@ -39,6 +39,7 @@ struct StreamDeckSurfaceID
     TurboJpegResourcesProvider* TjProvider;
 
     std::vector<StreamDeckFrame> Frames;
+    size_t CurrentFrameIndex = 0;
 
     void GenerateSurfaceFromJpg(std::vector<uint8_t>& pRawFileData)
     {
@@ -87,8 +88,6 @@ struct StreamDeckSurfaceID
         FreeImage_Unload(lBitmapBGRA);
         FreeImage_Unload(lBitmap);
         FreeImage_CloseMemory(lFiMemory);
-
-        //IsValid = true;
     }
 
     void GenerateSurfaceFromGif(std::vector<uint8_t>& pRawFileData)
@@ -159,6 +158,21 @@ struct StreamDeckSurfaceID
 
         tjFree(lBuffer);
         tjFree(lTransformedBuffer[0]);
+    }
+
+    StreamDeckFrame* GetFrame(int32_t pFrameIndex)
+    {
+        if(pFrameIndex == -1)
+        {
+            pFrameIndex = CurrentFrameIndex;
+        }
+
+        if( pFrameIndex < Frames.size() )
+        {
+            return &Frames[pFrameIndex];
+        }
+
+        return nullptr;
     }
 };
 
@@ -275,40 +289,75 @@ StreamDeckSurface::~StreamDeckSurface()
     delete mID;
 }
 
-size_t StreamDeckSurface::GetTexture()
-{
-    if ( mID->Frames.empty() )
-    {
-        return 0;
-    }
-
-    return (size_t)mID->Frames[0].Texture;
-}
-
 bool StreamDeckSurface::IsValid()
 {
     return !mID->Frames.empty();
 }
 
-size_t StreamDeckSurface::GetFrameCount()
+bool StreamDeckSurface::Update(float pFrameDuration)
 {
-    return mID->Frames.size();
+    bool lUpdated = false;
+
+    StreamDeckFrame* lCurrentFrame = &mID->Frames[mID->CurrentFrameIndex];
+    if(lCurrentFrame->Duration > 0 )
+    {//OK we have an animated frame
+
+        lCurrentFrame->StackedDisplayedDuration += (pFrameDuration*1000);//Here we have millisecond resolution
+        while (lCurrentFrame->StackedDisplayedDuration > lCurrentFrame->Duration)
+        {
+            lUpdated = true;
+
+            int32_t lResidualDuration = lCurrentFrame->StackedDisplayedDuration - lCurrentFrame->Duration;
+            lCurrentFrame->StackedDisplayedDuration = 0;//put back this counter to original value
+
+            //set next frame
+            if( ++mID->CurrentFrameIndex >= mID->Frames.size() )
+            {
+                mID->CurrentFrameIndex = 0;
+            }
+
+            lCurrentFrame = &mID->Frames[mID->CurrentFrameIndex];
+            lCurrentFrame->StackedDisplayedDuration = lResidualDuration;//put residual duration to improve sync
+        }
+    }
+
+    return lUpdated;
 }
 
-size_t StreamDeckSurface::GetJpegSize(size_t pFrameIndex)
+int32_t StreamDeckSurface::GetFrameCount()
 {
-    if( pFrameIndex < mID->Frames.size() )
+    return int32_t(mID->Frames.size());
+}
+
+size_t StreamDeckSurface::GetJpegSize(int32_t pFrameIndex)
+{
+    StreamDeckFrame* lFrame = mID->GetFrame(pFrameIndex);
+    if( lFrame != nullptr )
     {
-        return mID->Frames[pFrameIndex].JpgFileData.size();
+        return lFrame->JpgFileData.size();
     }
+
     return 0;
 }
 
-uint8_t* StreamDeckSurface::GetJpegData(size_t pFrameIndex)
+uint8_t* StreamDeckSurface::GetJpegData(int32_t pFrameIndex)
 {
-    if( pFrameIndex < mID->Frames.size() )
+    StreamDeckFrame* lFrame = mID->GetFrame(pFrameIndex);
+    if( lFrame != nullptr )
     {
-        return mID->Frames[pFrameIndex].JpgFileData.data();
+        return lFrame->JpgFileData.data();
     }
+
     return nullptr;
+}
+
+size_t StreamDeckSurface::GetTexture(int32_t pFrameIndex)
+{
+    StreamDeckFrame* lFrame = mID->GetFrame(pFrameIndex);
+    if( lFrame != nullptr )
+    {
+        return size_t(lFrame->Texture);
+    }
+
+    return 0;
 }
