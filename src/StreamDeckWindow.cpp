@@ -141,10 +141,27 @@ int32_t StreamDeckWindow::Iterate()
 
     //TODO: Find a better solution for this event 
     //Clean drop queue
-    while(!mDroppedFileQueue.empty())
+    if( !mDroppedFileQueue.empty())
     {
-        mDroppedFileQueue.pop();
+        {//Special case for testing
+            const char* lFilePath = mDroppedFileQueue.front().c_str();
+
+            for( std::pair<std::string, StreamDeckDevice*> mDevicePair :mDevicesMap)
+            {
+                for ( size_t i = 0 ; i < 15 ; ++i)
+                {
+                    mDevicePair.second->SetButtonImage(i, lFilePath);
+                }
+            }
+        }
+        
+
+        while(!mDroppedFileQueue.empty())
+        {
+            mDroppedFileQueue.pop();
+        }
     }
+    
 
     return SDL_APP_CONTINUE;
 }
