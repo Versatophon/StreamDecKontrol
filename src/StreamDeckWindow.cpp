@@ -3,18 +3,54 @@
 #include <SDL3/SDL.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <unordered_set>
 #include <list>
 
 #include "externals/imgui/imgui.h"
 
-StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr)
+#include "StreamDeckDevice.h"
+
+//TODO: check if we need this header
+#include "StreamDeckSurface.h"
+#include "StreamDeckSurfaceProvider.h"
+
+
+StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
+mStreamDeckSurfaceProvider(new StreamDeckSurfaceProvider(this))
 {
 }
  
 StreamDeckWindow::~StreamDeckWindow()
 {
+    delete mStreamDeckSurfaceProvider;
+}
+
+const char* StreamDeckWindow::GetQueuedFilepath()
+{
+    if( mDroppedFileQueue.empty() )
+    {
+        return nullptr;
+    }
+
+    mLastDroppedFilepath = mDroppedFileQueue.front();mDroppedFileQueue.pop();
+    return mLastDroppedFilepath.c_str();
+}
+
+bool StreamDeckWindow::DropPending()
+{
+    return mIsDroppingSomething;
+}
+
+float StreamDeckWindow::DropPositionX()
+{
+    return mDropPositionX;
+}
+
+float StreamDeckWindow::DropPositionY()
+{
+    return mDropPositionY;
 }
 
 int32_t StreamDeckWindow::Init()
@@ -41,15 +77,12 @@ int32_t StreamDeckWindow::Event(SDL_Event *pEvent)
 
         case SDL_EVENT_DROP_FILE:
             std::cout << "File dropped: " << pEvent->drop.data << std::endl;
+            mDroppedFileQueue.push(pEvent->drop.data);
         break;
 
         case SDL_EVENT_DROP_POSITION:
             mDropPositionX = pEvent->drop.x;
             mDropPositionY = pEvent->drop.y;
-            //std::cout << "File moving: " << pEvent->drop.x << ";" << pEvent->drop.y << std::endl;
-
-        
-        //std::cout << "File data: " << pEvent->drop.data << std::endl;
         break;
 
     }
@@ -62,9 +95,12 @@ int32_t StreamDeckWindow::Iterate()
     //Setup
     //TODO: may need to perform this less often
     EnumerateDevices();
-    
-    //mCounter++;
 
+    for( std::pair<std::string, StreamDeckDevice*> mDevicePair :mDevicesMap)
+    {
+        mDevicePair.second->Update(GetLastFrameDuration());
+    }
+    
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 
@@ -72,23 +108,39 @@ int32_t StreamDeckWindow::Iterate()
 
     if( ImGui::BeginTabBar("bar") )
     {
-        for( std::pair<std::string, StreamDeckRawDevice*> mDevicePair :mDevicesMap)
+        for( std::pair<std::string, StreamDeckDevice*> mDevicePair :mDevicesMap)
         {
-            mDevicePair.second->Update();
-            std::string lDeviceSerial = mDevicePair.first;
-            //ImGui::Text(lDeviceSerial.c_str());
-            
-            DisplayDeviceTab(mDevicePair.second);
-            
-
+            mDevicePair.second->DisplayDeviceTab();
         }
        
-            ImGui::EndTabBar();
+        ImGui::EndTabBar();
     }
 
-    //ImGui::DragInt("Compteur", &mCounter);
-
     ImGui::End();
+
+    //TODO: Find a better solution for this event 
+    //Clean drop queue
+    if( !mDroppedFileQueue.empty())
+    {
+        {//Special case for testing
+            const char* lFilePath = mDroppedFileQueue.front().c_str();
+
+            for( std::pair<std::string, StreamDeckDevice*> mDevicePair :mDevicesMap)
+            {
+                for ( size_t i = 0 ; i < 15 ; ++i)
+                {
+                    mDevicePair.second->SetButtonImage(i, lFilePath);
+                }
+            }
+        }
+        
+
+        while(!mDroppedFileQueue.empty())
+        {
+            mDroppedFileQueue.pop();
+        }
+    }
+    
 
     return SDL_APP_CONTINUE;
 }
@@ -96,104 +148,6 @@ int32_t StreamDeckWindow::Iterate()
 void StreamDeckWindow::Quit()
 {    
     int32_t lRes = hid_exit();
-}
-
-void StreamDeckWindow::DisplayDeviceTab(StreamDeckRawDevice* pDevice)
-{
-    std::string lSerial = pDevice->GetSerial();
-    if ( ImGui::BeginTabItem(lSerial.c_str()))
-    {
-        if( ImGui::Button(("Reset##" + lSerial).c_str()) )
-        {
-            pDevice->Reset();
-        }
-
-        ImGui::SameLine();
-
-        uint8_t lMin = 0;
-        uint8_t lMax = 100;
-        uint8_t lBrightness = pDevice->GetBrightness();
-
-        if( ImGui::SliderScalar("Brightness", ImGuiDataType_U8, &lBrightness, &lMin, &lMax, nullptr) )
-        {
-            pDevice->SetBrightness(lBrightness);
-        }
-
-        uint8_t lButtonIndex = 0;
-        for (size_t lRow = 0 ; lRow < 3 ; ++lRow )
-        {
-            for (size_t lCol = 0 ; lCol < 5 ; ++lCol )
-            {
-                bool lButtonPressed = pDevice->GetButtonPressed(lButtonIndex);
-                //ImGui::Checkbox(("##" + std::to_string(lButtonIndex)).c_str(), &lButtonPressed);
-
-                DisplayButton(lButtonPressed);
-
-                ++lButtonIndex;
-
-                if( (lButtonIndex % 5) != 0 )
-                {
-                    ImGui::SameLine();
-                }
-            }
-        }
-        #if 0
-        if( ImGui::Button(("Set Img 0##" + lSerial).c_str()) )
-        {
-            pDevice->SetBlankImage(0);
-        }
-
-        //ImGui::SameLine();
-    
-        if( ImGui::Button(("Set Img 5##" + lSerial).c_str()) )
-        {
-            pDevice->SetBlankImage(5);
-        }
-        ImGui::SameLine();
-        
-        if( ImGui::Button(("Set Img 10##" + lSerial).c_str()) )
-        {
-            pDevice->SetBlankImage(10);
-        }
-        ImGui::SameLine();
-        
-        if( ImGui::Button(("Reset##" + lSerial).c_str()) )
-        {
-            pDevice->Reset();
-        }
-        #endif
-
-        ImGui::EndTabItem();
-    }
-}
-
-void StreamDeckWindow::DisplayButton(bool pPressed)
-{
-    uint32_t lMargin = 20;
-    ImDrawList* lDrawList = ImGui::GetWindowDrawList();
-
-    ImVec2 lButtonBeginPos = ImGui::GetCursorPos();
-    ImVec2 lButtonEndPos = lButtonBeginPos;
-    lButtonEndPos.x += 74;
-    lButtonEndPos.y += 74;
-
-    bool lMayDropSomething = mIsDroppingSomething;
-
-    lMayDropSomething &= (mDropPositionX >= lButtonBeginPos.x);
-    lMayDropSomething &= (mDropPositionX <= lButtonEndPos.x);
-
-    lMayDropSomething &= (mDropPositionY >= lButtonBeginPos.y);
-    lMayDropSomething &= (mDropPositionY <= lButtonEndPos.y);
-
-    lDrawList->AddRect(lButtonBeginPos, lButtonEndPos, ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 10, 0, pPressed?2.f:1.f);
-
-    if (lMayDropSomething)
-    {
-        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + 37, lButtonBeginPos.y + 10), ImVec2(lButtonBeginPos.x + 37, lButtonBeginPos.y + 64), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
-        lDrawList->AddLine(ImVec2(lButtonBeginPos.x + 10, lButtonBeginPos.y + 37), ImVec2(lButtonBeginPos.x + 64, lButtonBeginPos.y + 37), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
-    }
-
-    ImGui::Dummy(ImVec2(74 + lMargin, 74 + lMargin + 5));
 }
 
 void StreamDeckWindow::EnumerateDevices()
@@ -208,8 +162,6 @@ void StreamDeckWindow::EnumerateDevices()
             std::wstring lWideString(cur_dev->serial_number);
             std::string lSerial = std::string( lWideString.begin(), lWideString.end() );
             lConnectedSerials.insert(lSerial);
-            
-            //mDevicesMap[lSerial] = new StreamDeckRawDevice(cur_dev->vendor_id, cur_dev->product_id, lSerial.c_str());
         }
 	}
 
@@ -221,14 +173,22 @@ void StreamDeckWindow::EnumerateDevices()
         if( mDevicesMap.find(lSerial) == mDevicesMap.end() )
         {//new connection
             //TODO: find an efficient way to store Vendor and Device Ids
-            mDevicesMap[lSerial] = new StreamDeckRawDevice(0x0fd9, 0x006d, lSerial.c_str());
+            mDevicesMap[lSerial] = new StreamDeckDevice(lSerial.c_str(), mStreamDeckSurfaceProvider, this);
+            
+            //need to update here in order to have connection to send the image
+            mDevicesMap[lSerial]->Update(0.f);
+            //mDevicesMap[lSerial]->SetImageFromPath(0, "/home/versatophon/Images/smiley72.gif");
+            //mDevicesMap[lSerial]->SetImageFromPath(1, "/home/versatophon/Images/gimp.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(2, "/home/versatophon/Images/gimp.bmp");
+            //mDevicesMap[lSerial]->SetImageFromPath(3, "/home/versatophon/Images/27.jpg");
+            //mDevicesMap[lSerial]->SetImageFromPath(4, "/home/versatophon/Images/27.2.jpg");
         }
     }
 
     std::list<std::string> lDevicesToRemove;
 
     //check for disconnected devices
-    for ( const std::pair<std::string, StreamDeckRawDevice*>& lDevicePair : mDevicesMap )
+    for ( const std::pair<std::string, StreamDeckDevice*>& lDevicePair : mDevicesMap )
     {
         if( lConnectedSerials.find(lDevicePair.first) == lConnectedSerials.end() )
         {
@@ -241,5 +201,4 @@ void StreamDeckWindow::EnumerateDevices()
         delete mDevicesMap[lSerial];
         mDevicesMap.erase(lSerial);
     }
-
 }

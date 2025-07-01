@@ -1,5 +1,5 @@
 CC = g++
-OPTIONS = -g -m64 -std=c++17 -Wall -Wpsabi -lhidapi-hidraw -lc -lpthread -lSDL3 -lGL
+OPTIONS = -g -m64 -std=c++17 -Wall -Wpsabi -lhidapi-hidraw -lc -lpthread -lSDL3 -lGL -lturbojpeg -lfreeimage
 
 CFLAGS = #-L/usr/include/imgui/ -L/usr/include/imgui/backends/
 
@@ -12,8 +12,11 @@ TARGET_DIR = ../bin/
 
 OBJS_LIST = $(OBJS_DIR)main.o\
 			$(OBJS_DIR)ManagedWindow.o\
+			$(OBJS_DIR)StreamDeckDevice.o\
+			$(OBJS_DIR)StreamDeckPhysicalDevice.o\
+			$(OBJS_DIR)StreamDeckSurface.o\
+			$(OBJS_DIR)StreamDeckSurfaceProvider.o\
 			$(OBJS_DIR)StreamDeckWindow.o\
-			$(OBJS_DIR)StreamDeckRawDevice.o\
 			$(OBJS_DIR)imgui_draw.o\
 			$(OBJS_DIR)imgui_impl_sdl3.o\
 			$(OBJS_DIR)imgui_impl_sdlrenderer3.o\
@@ -24,10 +27,19 @@ OBJS_LIST = $(OBJS_DIR)main.o\
 $(OBJS_DIR)main.o: $(SRC_DIR)main.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJS_DIR)StreamDeckRawDevice.o: $(SRC_DIR)StreamDeckRawDevice.cpp
+$(OBJS_DIR)ManagedWindow.o: $(SRC_DIR)ManagedWindow.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJS_DIR)ManagedWindow.o: $(SRC_DIR)ManagedWindow.cpp
+$(OBJS_DIR)StreamDeckDevice.o: $(SRC_DIR)StreamDeckDevice.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckPhysicalDevice.o: $(SRC_DIR)StreamDeckPhysicalDevice.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckSurface.o: $(SRC_DIR)StreamDeckSurface.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckSurfaceProvider.o: $(SRC_DIR)StreamDeckSurfaceProvider.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR)StreamDeckWindow.o: $(SRC_DIR)StreamDeckWindow.cpp
@@ -58,3 +70,8 @@ StreamDecKontrol: $(OBJS_LIST)
 # clean
 clean:
 	rm -rf $(OBJS_LIST)
+
+# rebuild
+rebuild:
+	make clean
+	make StreamDecKontrol

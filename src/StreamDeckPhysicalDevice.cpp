@@ -1,8 +1,11 @@
-#include "StreamDeckRawDevice.h"
+#include "StreamDeckPhysicalDevice.h"
 
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <filesystem>
+
+#include "StreamDeckSurface.h"
 
 std::wstring ConvertStringToWString(const std::string& pString)
 {
@@ -14,14 +17,14 @@ std::string ConvertWStringToString(const std::wstring& pString)
     return std::string(pString.begin(), pString.end());
 }
 
-StreamDeckRawDevice::StreamDeckRawDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial):
+StreamDeckPhysicalDevice::StreamDeckPhysicalDevice(uint16_t pVendorID, uint16_t pProductID, const char* pSerial):
     mVendorID(pVendorID),
     mProductID(pProductID),
     mSerial(pSerial)
 {
 }
 
-bool StreamDeckRawDevice::Update()
+bool StreamDeckPhysicalDevice::Update()
 {
     bool lUpdated = false;
 
@@ -65,21 +68,6 @@ bool StreamDeckRawDevice::Update()
                         //ButtonChanged(i, lCurrentState);
                     }
                 }
-#if 0
-                std::wcout << L"XMMMMMX" << std::endl;
-                for ( size_t j = 0 ; j < 3 ; ++j )
-                {
-                    std::wcout << L"X";
-                    
-                    for ( size_t i = 0 ; i < 5; ++i )
-                    {
-                        std::wcout << (mBuffer[j * 5 + 4 + i] ? L"_" : L"-");
-                    }
-                    
-                    std::wcout << L"X" << std::endl;
-                }
-                std::wcout << L"XWWWWWX" << std::endl<< std::endl;
-#endif
                 lUpdated = true;
             }
             else
@@ -92,7 +80,7 @@ bool StreamDeckRawDevice::Update()
     return lUpdated;
 }
 
-void StreamDeckRawDevice::Reset()
+void StreamDeckPhysicalDevice::Reset()
 {
     if(mDevice != nullptr )
     {
@@ -111,7 +99,7 @@ void StreamDeckRawDevice::Reset()
 /**
  * \param[in] pBrightness brightness to set [0-100]
  */
-void StreamDeckRawDevice::SetBrightness(uint8_t pBrightness)
+void StreamDeckPhysicalDevice::SetBrightness(uint8_t pBrightness)
 {
     if( mDevice != nullptr && pBrightness <= 100)
     {
@@ -131,12 +119,12 @@ void StreamDeckRawDevice::SetBrightness(uint8_t pBrightness)
     }
 }
 
-uint8_t StreamDeckRawDevice::GetBrightness() const
+uint8_t StreamDeckPhysicalDevice::GetBrightness() const
 {
     return mBrightness;
 }
 
-void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
+void StreamDeckPhysicalDevice::SetScreenSaverTime(uint32_t pTiming)
 {
     if( mDevice != nullptr )
     {
@@ -157,9 +145,17 @@ void StreamDeckRawDevice::SetScreenSaverTime(uint32_t pTiming)
     }
 }
 
-void StreamDeckRawDevice::SetBlankImage(uint8_t pButtonIndex)
+void StreamDeckPhysicalDevice::SetImageFromPath(uint8_t pButtonIndex, const char* pFilepath)
 {
-    if( mDevice != nullptr )
+    std::filesystem::path lFilepath(pFilepath);
+
+    bool lExtensionValid = false;
+    lExtensionValid |=  (lFilepath.extension() == ".jpg");
+    lExtensionValid |=  (lFilepath.extension() == ".jpeg");
+    lExtensionValid |=  (lFilepath.extension() == ".bmp");
+
+    //TODO: need to check size here when the lib will be available
+    if( lExtensionValid && mDevice != nullptr )
     {
         size_t lReportSize = 1024;
         std::vector<uint8_t> lReport;
@@ -167,13 +163,11 @@ void StreamDeckRawDevice::SetBlankImage(uint8_t pButtonIndex)
 
         memset(lReport.data(), 0, lReportSize);
 
-        std::ifstream lFile("/home/versatophon/Images/gimp.jpg", std::ios::binary | std::ios::ate);
+        std::ifstream lFile(pFilepath, std::ios::binary | std::ios::ate);
         size_t lFileSize = lFile.tellg();
         lFile.seekg(0, std::ios_base::beg);
 
-
         size_t lRemainingBytesCount = lFileSize;
-        size_t lPacketIndex = 0;
 
         struct PacketHeader
         {
@@ -212,12 +206,66 @@ void StreamDeckRawDevice::SetBlankImage(uint8_t pButtonIndex)
     }
 }
 
-const char* StreamDeckRawDevice::GetSerial() const
+void StreamDeckPhysicalDevice::SetImageFromSurface(uint8_t pButtonIndex, StreamDeckSurface* pSurface)
+{
+    size_t lDataSize = pSurface->GetJpegSize();
+
+    if( lDataSize == 0 )
+    {
+        return;
+    }
+
+    uint8_t* lDataContent = pSurface->GetJpegData();
+
+    size_t lReportSize = 1024;
+    std::vector<uint8_t> lReport;
+    lReport.resize(lReportSize);
+
+    size_t lRemainingBytesCount = lDataSize;
+
+    struct PacketHeader
+    {
+        uint8_t ReportID;
+        uint8_t MessageID;
+        uint8_t KeyIndex;
+        uint8_t LastPacket;
+        uint16_t PacketSize;
+        uint16_t PacketIndex;
+    };
+
+    PacketHeader& lHeader = *(PacketHeader*)lReport.data();
+
+    lHeader.ReportID = 0x02;
+    lHeader.MessageID = 0x07;
+    lHeader.KeyIndex = pButtonIndex;
+    lHeader.PacketIndex = 0;
+
+    char* lPacketDataPointer = (char*)(lReport.data()+sizeof(PacketHeader));
+    size_t lMaxPacketCapacity = lReportSize-sizeof(PacketHeader);
+
+    while (lRemainingBytesCount > 0)
+    {
+        lHeader.PacketSize = std::min(lMaxPacketCapacity, lRemainingBytesCount);
+
+        memcpy(lPacketDataPointer, lDataContent + (lHeader.PacketIndex*lMaxPacketCapacity), lHeader.PacketSize);
+
+        lRemainingBytesCount -= lHeader.PacketSize;
+
+        lHeader.LastPacket = lRemainingBytesCount > 0 ? 0x00 : 0x01;
+
+        //Need to have complete report size
+        hid_write(mDevice, lReport.data(), lReportSize);
+
+        lHeader.PacketIndex++;
+    }
+}
+
+const char* StreamDeckPhysicalDevice::GetSerial() const
 {
     return mSerial.c_str();
 }
 
-bool StreamDeckRawDevice::GetButtonPressed(uint8_t pButtonIndex) const
+bool StreamDeckPhysicalDevice::GetButtonPressed(uint8_t pButtonIndex) const
 {
     if( pButtonIndex < 15)
     {
@@ -226,7 +274,7 @@ bool StreamDeckRawDevice::GetButtonPressed(uint8_t pButtonIndex) const
     return false;
 }
 
-void StreamDeckRawDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
+void StreamDeckPhysicalDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
 {
     if (pIndex == 14 && !pPressed)
     {
@@ -273,17 +321,5 @@ void StreamDeckRawDevice::ButtonChanged(uint32_t pIndex, bool pPressed)
     {
         //SetBlankImage(pIndex);
         SetScreenSaverTime(0);
-    }
-
-    if (pIndex == 7 && !pPressed)
-    {
-        SetBlankImage(pIndex);
-        //SetBrightness(100);
-    }
-
-    if (pIndex == 8 && !pPressed)
-    {
-        SetBlankImage(pIndex);
-        //SetBrightness(100);
     }
 }

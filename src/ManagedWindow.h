@@ -2,11 +2,13 @@
 
 #include <cstdint>
 
+#include "Providers.h"
+
 union SDL_Event;
 
 struct ManagedWindowID;
 
-class ManagedWindow
+class ManagedWindow:public SdlResourcesProvider
 {
 public:
     ManagedWindow(int32_t pArgC, char** pArgV);
@@ -14,11 +16,16 @@ public:
 
     int32_t Execute();
 
+    SDL_Renderer* GetSdlRenderer() override;
+    SDL_Window* GetSdlWindow() override;
+
 protected:
     virtual int32_t Init();
     virtual int32_t Event(SDL_Event *pEvent);
     virtual int32_t Iterate();
     virtual void Quit();
+
+    float GetLastFrameDuration();
     
     int32_t mArgC = 0;
     char** mArgV = nullptr;
