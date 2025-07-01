@@ -15,6 +15,7 @@ OBJS_LIST = $(OBJS_DIR)main.o\
 			$(OBJS_DIR)StreamDeckDevice.o\
 			$(OBJS_DIR)StreamDeckPhysicalDevice.o\
 			$(OBJS_DIR)StreamDeckSurface.o\
+			$(OBJS_DIR)StreamDeckSurfaceProvider.o\
 			$(OBJS_DIR)StreamDeckWindow.o\
 			$(OBJS_DIR)imgui_draw.o\
 			$(OBJS_DIR)imgui_impl_sdl3.o\
@@ -36,6 +37,9 @@ $(OBJS_DIR)StreamDeckPhysicalDevice.o: $(SRC_DIR)StreamDeckPhysicalDevice.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR)StreamDeckSurface.o: $(SRC_DIR)StreamDeckSurface.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)StreamDeckSurfaceProvider.o: $(SRC_DIR)StreamDeckSurfaceProvider.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJS_DIR)StreamDeckWindow.o: $(SRC_DIR)StreamDeckWindow.cpp

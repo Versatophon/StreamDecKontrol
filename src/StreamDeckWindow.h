@@ -9,7 +9,7 @@
 #include "ManagedWindow.h"
 #include "FileDropProvider.h"
 
-//#include "StreamDeckPhysicalDevice.h"
+class StreamDeckSurfaceProvider;
 
 extern "C"
 {//TODO: need to move this
@@ -18,16 +18,11 @@ extern "C"
 
 class StreamDeckDevice;
 
-class StreamDeckWindow:public ManagedWindow, public TurboJpegResourcesProvider, public FileDropProvider
+class StreamDeckWindow:public ManagedWindow, public FileDropProvider
 {
 public:
     StreamDeckWindow();
     ~StreamDeckWindow();
-
-    //TurboJpegResourcesProvider
-    tjhandle GetCompressor() override;
-    tjhandle GetDecompressor() override;
-    tjhandle GetTransformer() override;
 
     //FileDropProvider
     const char* GetQueuedFilepath() override;
@@ -46,15 +41,12 @@ private:
 
     void EnumerateDevices();
 
+    StreamDeckSurfaceProvider* mStreamDeckSurfaceProvider = nullptr;
+
     bool mIsDroppingSomething = false;
     std::queue<std::string> mDroppedFileQueue;
     float mDropPositionX;
     float mDropPositionY;
-
-    //TurboJpeg stuff
-    tjhandle mCompressorInstance;
-    tjhandle mDecompressorInstance;
-    tjhandle mTransformerInstance;
 
     //DnD path storage
     std::string mLastDroppedFilepath;

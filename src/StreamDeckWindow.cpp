@@ -2,8 +2,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <turbojpeg.h>
-
 #include <iostream>
 #include <fstream>
 
@@ -16,36 +14,17 @@
 
 //TODO: check if we need this header
 #include "StreamDeckSurface.h"
+#include "StreamDeckSurfaceProvider.h"
 
 
 StreamDeckWindow::StreamDeckWindow(): ManagedWindow(0, nullptr),
-mCompressorInstance(tjInitCompress()),
-mDecompressorInstance(tjInitDecompress()),
-mTransformerInstance(tjInitTransform())
+mStreamDeckSurfaceProvider(new StreamDeckSurfaceProvider(this))
 {
-    //mButtonImages.resize(15, nullptr);
 }
  
 StreamDeckWindow::~StreamDeckWindow()
 {
-    tjDestroy(mCompressorInstance);
-    tjDestroy(mDecompressorInstance);
-    tjDestroy(mTransformerInstance);
-}
-
-tjhandle StreamDeckWindow::GetCompressor()
-{
-    return mCompressorInstance;
-}
-
-tjhandle StreamDeckWindow::GetDecompressor()
-{
-    return mDecompressorInstance;
-}
-
-tjhandle StreamDeckWindow::GetTransformer()
-{
-    return mTransformerInstance;
+    delete mStreamDeckSurfaceProvider;
 }
 
 const char* StreamDeckWindow::GetQueuedFilepath()
@@ -194,7 +173,7 @@ void StreamDeckWindow::EnumerateDevices()
         if( mDevicesMap.find(lSerial) == mDevicesMap.end() )
         {//new connection
             //TODO: find an efficient way to store Vendor and Device Ids
-            mDevicesMap[lSerial] = new StreamDeckDevice(lSerial.c_str(), this, this, this);
+            mDevicesMap[lSerial] = new StreamDeckDevice(lSerial.c_str(), mStreamDeckSurfaceProvider, this);
             
             //need to update here in order to have connection to send the image
             mDevicesMap[lSerial]->Update(0.f);

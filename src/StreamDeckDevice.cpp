@@ -1,15 +1,15 @@
 #include "StreamDeckDevice.h"
 
 #include "StreamDeckSurface.h"
+#include "StreamDeckSurfaceProvider.h"
 #include "StreamDeckPhysicalDevice.h"
 #include "FileDropProvider.h"
 
 #include "externals/imgui/imgui.h"
 
-StreamDeckDevice::StreamDeckDevice(const char* pDeviceSerial, SdlResourcesProvider* pSdlResourcesProvider, TurboJpegResourcesProvider* pTurboJpegResourcesProvider, FileDropProvider* pFileDropProvider):
+StreamDeckDevice::StreamDeckDevice(const char* pDeviceSerial, StreamDeckSurfaceProvider* pStreamDeckSurfaceProvider, FileDropProvider* pFileDropProvider):
     mPhysicalDevice(new StreamDeckPhysicalDevice(0x0fd9, 0x006d, pDeviceSerial)),
-    mSdlResourcesProvider(pSdlResourcesProvider),
-    mTurboJpegResourcesProvider(pTurboJpegResourcesProvider),
+    mStreamDeckSurfaceProvider(pStreamDeckSurfaceProvider),
     mFileDropProvider(pFileDropProvider)
 {
     mStreamDeckSurfaces = std::vector<StreamDeckSurface*>(15, nullptr);
@@ -20,20 +20,20 @@ StreamDeckDevice::~StreamDeckDevice()
     delete mPhysicalDevice;
 }
 
-void StreamDeckDevice::SetButtonImage(size_t pButtonIndex, const char* pFilePath)
+void StreamDeckDevice::SetButtonImage(size_t pButtonIndex, const char* pFilepath)
 {
     
     if( pButtonIndex < mStreamDeckSurfaces.size() )
     {
         //TODO: factorize
-        StreamDeckSurface* lStreamDeckSurface = new StreamDeckSurface(pFilePath, mSdlResourcesProvider, mTurboJpegResourcesProvider);
+        StreamDeckSurface* lStreamDeckSurface = mStreamDeckSurfaceProvider->GetSurface(pFilepath);
         if( lStreamDeckSurface->IsValid() )
         {
             ReplaceSurface(pButtonIndex, lStreamDeckSurface);
         }
         else
         {
-            delete lStreamDeckSurface;
+            mStreamDeckSurfaceProvider->ReleaseSurface(lStreamDeckSurface);
         }
     }
 }
@@ -91,14 +91,14 @@ void StreamDeckDevice::DisplayDeviceTab()
                     const char* lFilepath;
                     while( (lFilepath = mFileDropProvider->GetQueuedFilepath()) != nullptr )
                     {//if mouse is above this button and we have a file drop queue
-                        StreamDeckSurface* lStreamDeckSurface = new StreamDeckSurface(lFilepath, mSdlResourcesProvider, mTurboJpegResourcesProvider);
+                        StreamDeckSurface* lStreamDeckSurface = mStreamDeckSurfaceProvider->GetSurface(lFilepath);
                         if( lStreamDeckSurface->IsValid() )
                         {
                             ReplaceSurface(lButtonIndex, lStreamDeckSurface);
                         }
                         else
                         {
-                            delete lStreamDeckSurface;
+                            mStreamDeckSurfaceProvider->ReleaseSurface(lStreamDeckSurface);
                         }
                     }
                 }
@@ -120,7 +120,7 @@ void StreamDeckDevice::ReplaceSurface(size_t pButtonIndex, StreamDeckSurface* pS
 {
     if( mStreamDeckSurfaces[pButtonIndex] != nullptr)
     {
-        delete mStreamDeckSurfaces[pButtonIndex];
+        mStreamDeckSurfaceProvider->ReleaseSurface(mStreamDeckSurfaces[pButtonIndex]);
     }
 
     mStreamDeckSurfaces[pButtonIndex] = pStreamDeckSurface;

@@ -4,15 +4,17 @@
 #include <cstddef>
 
 struct StreamDeckSurfaceID;
-class SdlResourcesProvider;
-class TurboJpegResourcesProvider;
+
+class StreamDeckImage;
 
 class StreamDeckSurface
 {
 public:
-    StreamDeckSurface(const char* pFilepath, SdlResourcesProvider* pSdlResourcesProvider, TurboJpegResourcesProvider* pTurboJpegResourcesProvider);
+    StreamDeckSurface(StreamDeckImage& pStreamDeckImage);
     ~StreamDeckSurface();
-    
+
+    const StreamDeckImage& GetImage() const;
+        
     bool IsValid();
     
     /**

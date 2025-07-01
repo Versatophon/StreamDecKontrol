@@ -4,18 +4,17 @@
 
 class StreamDeckPhysicalDevice;
 class FileDropProvider;
-class TurboJpegResourcesProvider;
-class SdlResourcesProvider;
+class StreamDeckSurfaceProvider;
 
 class StreamDeckSurface;
 
 class StreamDeckDevice
 {
 public:
-    StreamDeckDevice(const char* pDeviceSerial, SdlResourcesProvider* pSdlResourcesProvider, TurboJpegResourcesProvider* pTurboJpegResourcesProvider, FileDropProvider* pFileDropProvider);
+    StreamDeckDevice(const char* pDeviceSerial, StreamDeckSurfaceProvider* pStreamDeckSurfaceProvider, FileDropProvider* pFileDropProvider);
     ~StreamDeckDevice();
 
-    void SetButtonImage(size_t pButtonIndex, const char* pFilePath);
+    void SetButtonImage(size_t pButtonIndex, const char* pFilepath);
 
     bool Update(float pFrameDuration);
 
@@ -23,8 +22,9 @@ public:
 
 private:
     StreamDeckPhysicalDevice* mPhysicalDevice = nullptr;
-    SdlResourcesProvider* mSdlResourcesProvider;
-    TurboJpegResourcesProvider* mTurboJpegResourcesProvider;
+
+    StreamDeckSurfaceProvider* mStreamDeckSurfaceProvider = nullptr;
+
     FileDropProvider* mFileDropProvider = nullptr;
 
 
