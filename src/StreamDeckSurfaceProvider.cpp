@@ -261,10 +261,10 @@ struct StreamDeckSurfaceProviderId
     void GenerateInternalJpegData(StreamDeckImage& pStreamDeckImage)
     {
         uint8_t* lBuffer = nullptr; 
-        size_t lSize = 0;
+        unsigned long lSize = 0;
 
         uint8_t* lTransformedBuffer[1] = {nullptr}; 
-        size_t lTrasformedSize[1] = {0};
+        unsigned long lTransformedSize[1] = {0};
         tjtransform lTransform[1] = {
             tjtransform
             {
@@ -281,9 +281,9 @@ struct StreamDeckSurfaceProviderId
             tjCompress2(CompressorInstance, (uint8_t*)lFrame.Surface->pixels, lFrame.Surface->w, lFrame.Surface->pitch, lFrame.Surface->h, 
                         TJPF_BGRA, &lBuffer, &lSize, TJSAMP_444, 95, TJFLAG_ACCURATEDCT);
 
-            tjTransform(TransformerInstance, lBuffer, lSize, 1, lTransformedBuffer, lTrasformedSize, lTransform, TJFLAG_ACCURATEDCT);
+            tjTransform(TransformerInstance, lBuffer, lSize, 1, lTransformedBuffer, lTransformedSize, lTransform, TJFLAG_ACCURATEDCT);
 
-            lFrame.JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+lTrasformedSize[0]);
+            lFrame.JpgFileData = std::vector<uint8_t>(lTransformedBuffer[0], lTransformedBuffer[0]+ lTransformedSize[0]);
         }
 
         tjFree(lBuffer);

@@ -1,2 +1,9 @@
 /bin
 /intermediate
+/.vs
+/prj/StreamDecKontrol/.vs/StreamDecKontrol
+/prj/StreamDecKontrol/StreamDecKontrol.vcxproj.user
+/generated/bin
+/prj-win/.vs/StreamDecKontrol
+/prj-win/packages
+/prj-win/StreamDecKontrol.vcxproj.user
