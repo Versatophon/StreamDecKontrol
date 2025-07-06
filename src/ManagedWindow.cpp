@@ -11,7 +11,6 @@
 #include "externals/imgui/imgui_impl_sdlrenderer3.h"
 
 #include <cstdlib>
-#include <GL/gl.h>
 
 #include <iostream>
 

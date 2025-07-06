@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{46348f82-445b-4a0b-88fa-4890d1c0b732}</ProjectGuid>
+    <RootNamespace>StreamDecKontrol</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)..\generated\bin\$(Configuration).$(PlatformShortName)\</OutDir>
+    <IntDir>$(SolutionDir)..\intermediate\$(Configuration).$(PlatformShortName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)..\generated\bin\$(Configuration).$(PlatformShortName)\</OutDir>
+    <IntDir>$(SolutionDir)..\intermediate\$(Configuration).$(PlatformShortName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)..\generated\bin\$(Configuration).$(PlatformShortName)\</OutDir>
+    <IntDir>$(SolutionDir)..\intermediate\$(Configuration).$(PlatformShortName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)..\generated\bin\$(Configuration).$(PlatformShortName)\</OutDir>
+    <IntDir>$(SolutionDir)..\intermediate\$(Configuration).$(PlatformShortName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\externals\imgui\imconfig.h" />
+    <ClInclude Include="..\src\externals\imgui\imgui.h" />
+    <ClInclude Include="..\src\externals\imgui\imgui_impl_sdl3.h" />
+    <ClInclude Include="..\src\externals\imgui\imgui_impl_sdlrenderer3.h" />
+    <ClInclude Include="..\src\externals\imgui\imgui_internal.h" />
+    <ClInclude Include="..\src\externals\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\src\externals\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\src\externals\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\src\FileDropProvider.h" />
+    <ClInclude Include="..\src\ManagedWindow.h" />
+    <ClInclude Include="..\src\Providers.h" />
+    <ClInclude Include="..\src\StreamDeckDevice.h" />
+    <ClInclude Include="..\src\StreamDeckImage.h" />
+    <ClInclude Include="..\src\StreamDeckPhysicalDevice.h" />
+    <ClInclude Include="..\src\StreamDeckSurface.h" />
+    <ClInclude Include="..\src\StreamDeckSurfaceProvider.h" />
+    <ClInclude Include="..\src\StreamDeckWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\externals\imgui\imgui.cpp" />
+    <ClCompile Include="..\src\externals\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\src\externals\imgui\imgui_impl_sdl3.cpp" />
+    <ClCompile Include="..\src\externals\imgui\imgui_impl_sdlrenderer3.cpp" />
+    <ClCompile Include="..\src\externals\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\src\externals\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\ManagedWindow.cpp" />
+    <ClCompile Include="..\src\StreamDeckDevice.cpp" />
+    <ClCompile Include="..\src\StreamDeckPhysicalDevice.cpp" />
+    <ClCompile Include="..\src\StreamDeckSurface.cpp" />
+    <ClCompile Include="..\src\StreamDeckSurfaceProvider.cpp" />
+    <ClCompile Include="..\src\StreamDeckWindow.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\SDL3-VC.Redist.3.2.8\build\native\SDL3-VC.Redist.targets" Condition="Exists('packages\SDL3-VC.Redist.3.2.8\build\native\SDL3-VC.Redist.targets')" />
+    <Import Project="packages\SDL3-VC.3.2.8\build\native\SDL3-VC.targets" Condition="Exists('packages\SDL3-VC.3.2.8\build\native\SDL3-VC.targets')" />
+    <Import Project="packages\FreeImageNative.redist.3.17.0\build\native\FreeImageNative.redist.targets" Condition="Exists('packages\FreeImageNative.redist.3.17.0\build\native\FreeImageNative.redist.targets')" />
+    <Import Project="packages\FreeImageNative.3.17.0\build\native\FreeImageNative.targets" Condition="Exists('packages\FreeImageNative.3.17.0\build\native\FreeImageNative.targets')" />
+    <Import Project="packages\hidapi-VC.Redist.0.15.0\build\native\hidapi-VC.Redist.targets" Condition="Exists('packages\hidapi-VC.Redist.0.15.0\build\native\hidapi-VC.Redist.targets')" />
+    <Import Project="packages\hidapi-VC.0.15.0\build\native\hidapi-VC.targets" Condition="Exists('packages\hidapi-VC.0.15.0\build\native\hidapi-VC.targets')" />
+    <Import Project="packages\turbojpeg-VC.Redist.3.1.1\build\native\turbojpeg-VC.Redist.targets" Condition="Exists('packages\turbojpeg-VC.Redist.3.1.1\build\native\turbojpeg-VC.Redist.targets')" />
+    <Import Project="packages\turbojpeg-VC.3.1.1\build\native\turbojpeg-VC.targets" Condition="Exists('packages\turbojpeg-VC.3.1.1\build\native\turbojpeg-VC.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\SDL3-VC.Redist.3.2.8\build\native\SDL3-VC.Redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SDL3-VC.Redist.3.2.8\build\native\SDL3-VC.Redist.targets'))" />
+    <Error Condition="!Exists('packages\SDL3-VC.3.2.8\build\native\SDL3-VC.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SDL3-VC.3.2.8\build\native\SDL3-VC.targets'))" />
+    <Error Condition="!Exists('packages\FreeImageNative.redist.3.17.0\build\native\FreeImageNative.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\FreeImageNative.redist.3.17.0\build\native\FreeImageNative.redist.targets'))" />
+    <Error Condition="!Exists('packages\FreeImageNative.3.17.0\build\native\FreeImageNative.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\FreeImageNative.3.17.0\build\native\FreeImageNative.targets'))" />
+    <Error Condition="!Exists('packages\hidapi-VC.Redist.0.15.0\build\native\hidapi-VC.Redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\hidapi-VC.Redist.0.15.0\build\native\hidapi-VC.Redist.targets'))" />
+    <Error Condition="!Exists('packages\hidapi-VC.0.15.0\build\native\hidapi-VC.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\hidapi-VC.0.15.0\build\native\hidapi-VC.targets'))" />
+    <Error Condition="!Exists('packages\turbojpeg-VC.Redist.3.1.1\build\native\turbojpeg-VC.Redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\turbojpeg-VC.Redist.3.1.1\build\native\turbojpeg-VC.Redist.targets'))" />
+    <Error Condition="!Exists('packages\turbojpeg-VC.3.1.1\build\native\turbojpeg-VC.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\turbojpeg-VC.3.1.1\build\native\turbojpeg-VC.targets'))" />
+  </Target>
+</Project>
