@@ -10,8 +10,7 @@ typedef struct SDL_Texture SDL_Texture;
 
 struct StreamDeckFrame
 {   
-    int32_t Duration = -1;//-1 means infinite
-    int32_t StackedDisplayedDuration = 0;
+    int32_t Duration = -1;//-1 means infinite, milliseconds
     std::vector<uint8_t> JpgFileData;
     SDL_Surface* Surface;
     SDL_Texture* Texture;
