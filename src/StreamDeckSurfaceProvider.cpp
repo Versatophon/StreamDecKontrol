@@ -141,6 +141,23 @@ struct StreamDeckSurfaceProviderId
         Images[pFilepath] = lImage;
     }
 
+    /**
+    * Add frame to `StreamDeckImage` 
+    */
+    void AddFrameToImage(StreamDeckImage& pImage, StreamDeckFrame pFrame)
+    {
+        if (pFrame.Surface->w != 72 || pFrame.Surface->h != 72)
+        {//Resize surface if its size doesn't match StreamDeck button size
+            SDL_Surface* lScaledSurface = SDL_ScaleSurface(pFrame.Surface, 72, 72, SDL_SCALEMODE_LINEAR);
+
+            SDL_DestroySurface(pFrame.Surface);
+
+            pFrame.Surface = lScaledSurface;
+        }
+
+        pImage.Frames.push_back(pFrame);
+    }
+
     StreamDeckImage GenerateImageFromJpg(std::vector<uint8_t>& pRawFileData)
     {
         StreamDeckImage lImage;
@@ -167,7 +184,7 @@ struct StreamDeckSurfaceProviderId
             }
             else
             {
-                lImage.Frames.push_back(lFrame);
+                AddFrameToImage(lImage, lFrame);
             }
         }
         return lImage;
@@ -186,7 +203,7 @@ struct StreamDeckSurfaceProviderId
         lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lBitmapBGRA), FreeImage_GetHeight(lBitmapBGRA), SDL_PIXELFORMAT_BGRA32);
         memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lBitmapBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
 
-        lImage.Frames.push_back(lFrame);
+        AddFrameToImage(lImage, lFrame);
 
         //Free memory
         FreeImage_Unload(lBitmapBGRA);
@@ -208,7 +225,7 @@ struct StreamDeckSurfaceProviderId
         lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lBitmapBGRA), FreeImage_GetHeight(lBitmapBGRA), SDL_PIXELFORMAT_BGRA32);
         memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lBitmapBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
 
-        lImage.Frames.push_back(lFrame);
+        AddFrameToImage(lImage, lFrame);
 
         //Free memory
         FreeImage_Unload(lBitmapBGRA);
@@ -247,7 +264,7 @@ struct StreamDeckSurfaceProviderId
             lFrame.Surface = SDL_CreateSurface(FreeImage_GetWidth(lFrameBGRA), FreeImage_GetHeight(lFrameBGRA), SDL_PIXELFORMAT_BGRA32);
             memcpy(lFrame.Surface->pixels, FreeImage_GetBits(lFrameBGRA), lFrame.Surface->h * lFrame.Surface->pitch);
 
-            lImage.Frames.push_back(lFrame);
+            AddFrameToImage(lImage, lFrame);
             
             FreeImage_Unload(lFrameBGRA);
             FreeImage_UnlockPage(lGifImage, lFrameImage, false);
