@@ -38,6 +38,11 @@ void StreamDeckDevice::SetButtonImage(size_t pButtonIndex, const char* pFilepath
     }
 }
 
+void StreamDeckDevice::Reset()
+{
+    mPhysicalDevice->Reset();
+}
+
 bool StreamDeckDevice::Update(float pFrameDuration)
 {
     bool lUpdated = false;

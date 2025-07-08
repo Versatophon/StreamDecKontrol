@@ -14,6 +14,7 @@ struct StreamDeckSurfaceID
 {
     StreamDeckImage& Image;
     size_t CurrentFrameIndex = 0;
+    int32_t FrameStackedDisplayedDuration = 0;//milliseconds
 
     StreamDeckFrame* GetFrame(int32_t pFrameIndex)
     {
@@ -53,13 +54,13 @@ bool StreamDeckSurface::Update(float pFrameDuration)
     if(lCurrentFrame->Duration > 0 )
     {//OK we have an animated frame
 
-        lCurrentFrame->StackedDisplayedDuration += (pFrameDuration*1000);//Here we have millisecond resolution
-        while (lCurrentFrame->StackedDisplayedDuration > lCurrentFrame->Duration)
+        mID->FrameStackedDisplayedDuration += (pFrameDuration*1000);//Here we have millisecond resolution
+
+        while (mID->FrameStackedDisplayedDuration > lCurrentFrame->Duration)
         {
             lUpdated = true;
 
-            int32_t lResidualDuration = lCurrentFrame->StackedDisplayedDuration - lCurrentFrame->Duration;
-            lCurrentFrame->StackedDisplayedDuration = 0;//put back this counter to original value
+            mID->FrameStackedDisplayedDuration -= lCurrentFrame->Duration;//Reset with sync frame timing
 
             //set next frame
             if( ++mID->CurrentFrameIndex >= mID->Image.Frames.size() )
@@ -68,7 +69,6 @@ bool StreamDeckSurface::Update(float pFrameDuration)
             }
 
             lCurrentFrame = mID->Image.GetFrame(mID->CurrentFrameIndex);
-            lCurrentFrame->StackedDisplayedDuration = lResidualDuration;//put residual duration to improve sync
         }
     }
 

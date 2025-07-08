@@ -96,6 +96,7 @@ int32_t StreamDeckWindow::Iterate()
     //TODO: may need to perform this less often
     EnumerateDevices();
 
+
     for( std::pair<std::string, StreamDeckDevice*> mDevicePair :mDevicesMap)
     {
         mDevicePair.second->Update(GetLastFrameDuration());
@@ -146,7 +147,11 @@ int32_t StreamDeckWindow::Iterate()
 }
 
 void StreamDeckWindow::Quit()
-{    
+{
+    for (std::pair<std::string, StreamDeckDevice*> mDevicePair : mDevicesMap)
+    {
+        mDevicePair.second->Reset();
+    }
     int32_t lRes = hid_exit();
 }
 

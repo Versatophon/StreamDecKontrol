@@ -16,6 +16,8 @@ public:
 
     void SetButtonImage(size_t pButtonIndex, const char* pFilepath);
 
+    void Reset();
+
     bool Update(float pFrameDuration);
 
     void DisplayDeviceTab();
