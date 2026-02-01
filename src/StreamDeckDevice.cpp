@@ -83,6 +83,8 @@ void StreamDeckDevice::DisplayDeviceTab()
             mPhysicalDevice->SetBrightness(lBrightness);
         }
 
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12.f, 12.f));
+        
         uint8_t lButtonIndex = 0;
         for (size_t lRow = 0 ; lRow < 3 ; ++lRow)
         {
@@ -116,6 +118,7 @@ void StreamDeckDevice::DisplayDeviceTab()
                 }
             }
         }
+        ImGui::PopStyleVar();
 
         ImGui::EndTabItem();
     }
@@ -184,7 +187,10 @@ bool StreamDeckDevice::DisplayButton(bool pPressed, StreamDeckSurface* pImage)
         lDrawList->AddLine(ImVec2(lButtonBeginPos.x + CROSS_MARGIN, lButtonBeginPos.y + IMG_SIZE/2), ImVec2(lButtonBeginPos.x + IMG_SIZE - CROSS_MARGIN, lButtonBeginPos.y + IMG_SIZE/2), ImColor(ImVec4{0.75f, 0.75f, 0.75f, 1.f}), 5.f);
     }
 
-    ImGui::Dummy(ImVec2(IMG_SIZE+BORDER_WIDTH*2 + lMargin, IMG_SIZE+BORDER_WIDTH*2 + lMargin + 5));
+    //lDrawList->AddRect( lItemBeginPos, ImVec2(lItemBeginPos .x+IMG_SIZE+BORDER_WIDTH + lMargin, lItemBeginPos .y+IMG_SIZE+BORDER_WIDTH + lMargin + 5), ImColor(ImVec4{0.75f, 0.25f, 0.25f, 1.f}));
+
+    ImGui::Dummy(ImVec2(IMG_SIZE, IMG_SIZE));
+    //ImGui::InvisibleButton("", ImVec2(IMG_SIZE, IMG_SIZE));
 
     return lMouseIsAbove;
 }
